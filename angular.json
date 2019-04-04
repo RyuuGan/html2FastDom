@@ -2,7 +2,34 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "",
-  "projects": {},
+  "projects": {
+    "compiler": {
+      "root": "libs/compiler",
+      "sourceRoot": "libs/compiler/src",
+      "projectType": "library",
+      "prefix": "html2FastDom2",
+      "architect": {
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/compiler/tsconfig.lib.json",
+              "libs/compiler/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/builders:jest",
+          "options": {
+            "jestConfig": "libs/compiler/jest.config.js",
+            "tsConfig": "libs/compiler/tsconfig.spec.json"
+          }
+        }
+      },
+      "schematics": {}
+    }
+  },
   "cli": {
     "warnings": {
       "typescriptMismatch": false,
@@ -10,5 +37,6 @@
     },
     "defaultCollection": "@nrwl/schematics"
   },
-  "schematics": {}
+  "schematics": {},
+  "defaultProject": "compiler"
 }
