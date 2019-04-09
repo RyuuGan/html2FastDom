@@ -1,7 +1,7 @@
 import { Component } from 'faster-dom';
 
 export class CompilerError extends Error {
-  constructor(public msg: string) {
+  constructor(public component: Component, public msg: string) {
     // 'Error' breaks prototype chain here
     super(msg);
 
@@ -24,10 +24,20 @@ export class CompilerErrorReactive extends CompilerError {
   ) {
     // 'Error' breaks prototype chain here
     super(
+      component,
       `${
         component.constructor.name
       }.${reactiveField}.${reactiveName} is not defined.`
     );
+
+    // restore prototype chain
+    const actualProto = new.target.prototype;
+
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(this, actualProto);
+    } else {
+      (this as any).__proto__ = actualProto;
+    }
   }
 }
 
@@ -38,6 +48,18 @@ export class CompilerErrorAttr extends CompilerError {
     public msg: string
   ) {
     // 'Error' breaks prototype chain here
-    super(`Attribute ${attr} at ${component.constructor.name} must be ${msg}.`);
+    super(
+      component,
+      `Attribute ${attr} at ${component.constructor.name} must be ${msg}.`
+    );
+
+    // restore prototype chain
+    const actualProto = new.target.prototype;
+
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(this, actualProto);
+    } else {
+      (this as any).__proto__ = actualProto;
+    }
   }
 }

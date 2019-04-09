@@ -1,14 +1,19 @@
-import { Component, FastDomNode, fdObject, Observer } from 'faster-dom';
+import { Component, FastDomNode, fdObject, Observer, fdFor } from 'faster-dom';
 import * as parse5 from 'parse5';
 import { isElementNode, isTextNode } from 'parse5/lib/tree-adapters/default';
-import { CompilerErrorReactive, CompilerErrorAttr } from './compilerError';
+import {
+  CompilerErrorReactive,
+  CompilerErrorAttr,
+  CompilerError
+} from './compilerError';
 
 export class HtmlToFastDomCompiler {
-  documentRoot: parse5.DefaultTreeDocumentFragment;
-
   constructor(public html: string) {
     this.documentRoot = parse5.parseFragment(html) as any;
   }
+
+  private static fdForAttribs = ['fdfor', 'fd-for', 'fdforkey', 'fd-for-key'];
+  documentRoot: parse5.DefaultTreeDocumentFragment;
 
   compile(component: Component): FastDomNode;
   compile(): (component: Component) => FastDomNode;
@@ -17,7 +22,7 @@ export class HtmlToFastDomCompiler {
       return this._compile(component);
     }
     return (cmp: Component) => {
-      this._compile(cmp);
+      return this._compile(cmp);
     };
   }
 
@@ -46,7 +51,7 @@ export class HtmlToFastDomCompiler {
     return fdForIdx > -1;
   }
 
-  private _compile(component: Component) {
+  private _compile(component: Component, context: any = {}) {
     if (this.documentRoot.childNodes.length > 1) {
       const [rootNode] = this.processNode(this.documentRoot, component);
       rootNode.tag = 'div';
@@ -59,18 +64,29 @@ export class HtmlToFastDomCompiler {
         textValue: ''
       };
     }
-    return this.processNode(root, component)[0];
+    if (this.isElementNode(root) && this.isFdFor(root)) {
+      const [rootNode] = this.processNode(this.documentRoot, component);
+      rootNode.tag = 'div';
+      return rootNode;
+    }
+    return this.processNode(root, component, context)[0];
   }
 
   processNode(
     node: parse5.DefaultTreeNode,
-    component: Component
+    component: Component,
+    context: any = {}
   ): FastDomNode[] {
     if (this.isTextNode(node)) {
       return [
         {
           tag: 'textNode',
-          textValue: this.processReactiveValue(node.value, component)
+          textValue: this.processReactiveValue(
+            node.value,
+            component,
+            context,
+            'reactive'
+          )
         }
       ];
     }
@@ -86,16 +102,18 @@ export class HtmlToFastDomCompiler {
       ];
     }
     if (this.isFdFor(node)) {
-      return this.processNodeFdFor(node, component);
+      return this.processNodeFdFor(node, component, context);
     }
-    const attrs = this.processAttrs(node, component);
+    const attrs = this.processAttrs(node, component, context);
     if (node.childNodes.length === 1 && this.isTextNode(node.childNodes[0])) {
       return [
         {
           tag: node.tagName.toLowerCase(),
           textValue: this.processReactiveValue(
             (node.childNodes[0] as parse5.DefaultTreeTextNode).value,
-            component
+            component,
+            context,
+            'reactive'
           ),
           ...attrs
         }
@@ -135,36 +153,54 @@ export class HtmlToFastDomCompiler {
   private processReactiveValue(
     input: string,
     component: Component,
-    reactiveType?: 'reactive'
+    context: any,
+    reactiveType: 'reactive'
   ): string | Observer<any>;
   private processReactiveValue(
     input: string,
     component: Component,
+    context: any,
     reactiveType: 'fdStyles'
   ): fdObject<any> | Observer<string>;
   private processReactiveValue(
     input: string,
     component: Component,
+    context: any,
     reactiveType: 'fdObjects'
   ): fdObject<any>;
   private processReactiveValue(
     input: string,
     component: Component,
-    reactiveType: 'reactive' | 'fdObjects' | 'fdStyles' = 'reactive'
+    context: any = {},
+    reactiveType: 'reactive' | 'fdObjects' | 'fdStyles'
   ) {
     const name = this.getReactiveName(input);
     if (name) {
-      if (!(name in component[reactiveType])) {
-        throw new CompilerErrorReactive(component, reactiveType, name);
-      }
-      return component[reactiveType][name];
+      return this.getValue(name, component, reactiveType, context);
     }
     return input;
   }
 
+  private getValue(
+    name: string,
+    component: Component,
+    reactiveType: string,
+    context: any
+  ) {
+    if (name in context) {
+      return context[name];
+    }
+    if (name in component[reactiveType]) {
+      return component[reactiveType][name];
+    }
+
+    throw new CompilerErrorReactive(component, reactiveType, name);
+  }
+
   private processAttrs(
     node: parse5.DefaultTreeElement,
-    component: Component
+    component: Component,
+    context: any
   ): any {
     const data = node.attrs.reduce(
       (memo, attr) => {
@@ -172,20 +208,25 @@ export class HtmlToFastDomCompiler {
           return memo;
         }
         if (attr.name === 'value') {
-          return this.processAttributeValue(attr, memo, component);
+          return this.processAttributeValue(attr, memo, component, context);
         }
         if (attr.name === 'style') {
-          return this.processAttributeStyle(attr, memo, component);
+          return this.processAttributeStyle(attr, memo, component, context);
         }
         if (attr.name === 'class') {
-          return this.processAttributeClass(attr, memo, component);
+          return this.processAttributeClass(attr, memo, component, context);
         }
         // fdIf
         if (attr.name === 'fdif' || attr.name === 'fd-if') {
-          return this.processAttributeFdIf(attr, memo, component);
+          return this.processAttributeFdIf(attr, memo, component, context);
         }
         const attrs = memo.attrs || {};
-        attrs[attr.name] = this.processReactiveValue(attr.value, component);
+        attrs[attr.name] = this.processReactiveValue(
+          attr.value,
+          component,
+          context,
+          'reactive'
+        );
         return {
           ...memo,
           attrs
@@ -207,7 +248,8 @@ export class HtmlToFastDomCompiler {
   private processAttributeFdIf(
     attr: parse5.Attribute,
     memo: any,
-    component: Component
+    component: Component,
+    context: any
   ) {
     const name = this.getReactiveName(attr.value);
     if (!name || !(name in component.reactive)) {
@@ -222,7 +264,8 @@ export class HtmlToFastDomCompiler {
   private processAttributeClass(
     attr: parse5.Attribute,
     memo: any,
-    component: Component
+    component: Component,
+    context: any
   ) {
     const attrValue = attr.value;
     const reactiveName = this.getReactiveName(attrValue);
@@ -230,7 +273,12 @@ export class HtmlToFastDomCompiler {
     if (reactiveName) {
       return {
         ...memo,
-        classList: this.processReactiveValue(attrValue, component, 'fdObjects')
+        classList: this.processReactiveValue(
+          attrValue,
+          component,
+          context,
+          'fdObjects'
+        )
       };
     }
     return {
@@ -242,10 +290,16 @@ export class HtmlToFastDomCompiler {
   private processAttributeValue(
     attr: parse5.Attribute,
     memo: any,
-    component: Component
+    component: Component,
+    context: any
   ) {
     const props = memo.props || {};
-    props.value = this.processReactiveValue(attr.value, component);
+    props.value = this.processReactiveValue(
+      attr.value,
+      component,
+      context,
+      'reactive'
+    );
     return {
       ...memo,
       props
@@ -255,7 +309,8 @@ export class HtmlToFastDomCompiler {
   private processAttributeStyle(
     attr: parse5.Attribute,
     memo: any,
-    component: Component
+    component: Component,
+    context: any
   ) {
     const val = attr.value;
     if (!val) {
@@ -263,19 +318,18 @@ export class HtmlToFastDomCompiler {
     }
     return {
       ...memo,
-      styles: this.processReactiveValue(val, component, 'fdStyles')
+      styles: this.processReactiveValue(val, component, context, 'fdStyles')
     };
   }
 
   private processNodeFdFor(
     node: parse5.DefaultTreeElement,
-    component: Component
+    component: Component,
+    context: any
   ): FastDomNode[] {
     const fdForAttrs = node.attrs.reduce(
       (memo, attr) =>
-        attr.name === 'fdfor' ||
-        attr.name === 'fd-for' ||
-        attr.name === 'fdForKey'
+        HtmlToFastDomCompiler.fdForAttribs.includes(attr.name)
           ? {
               ...memo,
               [attr.name]: attr.value
@@ -295,11 +349,45 @@ export class HtmlToFastDomCompiler {
     } else {
       try {
         arr = JSON.parse(fdForValue);
+        if (!Array.isArray(arr)) {
+          throw new Error('Not Array');
+        }
       } catch (e) {
-        throw new CompilerErrorAttr(component, 'reactive', name);
+        throw new CompilerErrorAttr(component, 'fdFor', 'an array');
       }
     }
 
-    return [];
+    let keyFn: (item: any) => any;
+    const fdForKeyValue = fdForAttrs['fdforkey'] || fdForAttrs['fd-for-key'];
+
+    if (fdForKeyValue) {
+      const name = this.getReactiveName(fdForKeyValue);
+      if (!name || typeof component[name] !== 'function') {
+        throw new CompilerError(
+          component,
+          `fdKeyFor must be a function, got ${
+            component.constructor.name
+          }[name] = ${component[name]}`
+        );
+      }
+      keyFn = component[name];
+    }
+    // TODO: add fdFor overrides for variables name
+
+    node.attrs = node.attrs.filter(
+      v => !HtmlToFastDomCompiler.fdForAttribs.includes(v.name)
+    );
+    return fdFor(
+      arr,
+      (item, index) => {
+        return this.processNode(node, component, {
+          ...context,
+          item,
+          index
+        })[0];
+      },
+      [],
+      keyFn
+    );
   }
 }

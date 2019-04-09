@@ -10,14 +10,16 @@ export class TestComponent extends Component {
         ';user-select: none;'
     ),
     src: fdValue('https://www.w3schools.com/html/pic_trulli.jpg'),
-    disabled: fdIf(false)
+    disabled: fdIf(false),
+    array: fdValue([1, 2]),
+    arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
   };
 
   fdObjects = {
     divClasses: new fdObject({
       'some-class': true,
       'some-other-class': false
-    }),
+    })
   };
 
   fdStyles = {
@@ -26,6 +28,10 @@ export class TestComponent extends Component {
       position: 'absolute'
     })
   };
+
+  keyFn(item: any) {
+    return item.key;
+  }
 
   changeBtnClick = () => {
     this.reactive.disabled.value = !this.reactive.disabled.value;
