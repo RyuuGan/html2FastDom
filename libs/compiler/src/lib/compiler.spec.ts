@@ -1,7 +1,7 @@
-import { HtmlToFastDomCompiler } from './compiler';
-import { TestComponent } from './mocks/testCompoment';
 import { fdObject } from 'faster-dom';
-import { CompilerError } from './compilerError';
+import { HtmlToFastDomCompiler } from './compiler';
+import { CompilerErrorReactive } from './compilerError';
+import { TestComponent } from './mocks/testCompoment';
 
 const comp = new TestComponent();
 
@@ -85,7 +85,7 @@ describe('Compiler', () => {
       const compiler = new HtmlToFastDomCompiler(
         '<input value="{{inputValue1}}"/>'
       );
-      expect(() => compiler.compile(comp)).toThrow(CompilerError);
+      expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
     });
   });
 
@@ -137,7 +137,7 @@ describe('Compiler', () => {
       const compiler = new HtmlToFastDomCompiler(
         '<div style="{{divStyles1}}">someText</div>'
       );
-      expect(() => compiler.compile(comp)).toThrow(CompilerError);
+      expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
     });
   });
 
@@ -185,11 +185,51 @@ describe('Compiler', () => {
       });
     });
 
-    it('should throw if reference in fdObjects if not defined', () => {
+    it('should throw if reference in fdObjects is not defined', () => {
       const compiler = new HtmlToFastDomCompiler(
         '<div class="{{divClasses1}}">someText</div>'
       );
-      expect(() => compiler.compile(comp)).toThrow(CompilerError);
+      expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
+    });
+  });
+
+  describe('fdIf', () => {
+    it('should compile fdIf attribute with reference to reactive', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdIf="{{disabled}}">someText</div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        textValue: 'someText',
+        show: comp.reactive.disabled
+      });
+    });
+
+    it('should compile fd-if attribute with reference to reactive', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fd-if="{{disabled}}">someText</div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        textValue: 'someText',
+        show: comp.reactive.disabled
+      });
+    });
+
+    it('should throw if reference in reactive is not defined', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdIf="{{disabled1}}">someText</div>'
+      );
+      expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
+    });
+
+    it('should throw if reference is not reactive', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdIf="disabled1">someText</div>'
+      );
+      expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
     });
   });
 });

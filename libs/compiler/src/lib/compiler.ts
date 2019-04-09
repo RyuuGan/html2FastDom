@@ -1,7 +1,7 @@
 import { Component, FastDomNode, fdObject, Observer } from 'faster-dom';
 import * as parse5 from 'parse5';
 import { isElementNode, isTextNode } from 'parse5/lib/tree-adapters/default';
-import { CompilerError } from './compilerError';
+import { CompilerErrorReactive, CompilerErrorAttr } from './compilerError';
 
 export class HtmlToFastDomCompiler {
   documentRoot: parse5.DefaultTreeDocumentFragment;
@@ -39,9 +39,16 @@ export class HtmlToFastDomCompiler {
     return node.nodeName === '#document-fragment';
   }
 
+  private isFdFor(node: parse5.DefaultTreeElement): boolean {
+    const fdForIdx = node.attrs.findIndex(
+      attr => attr.name === 'fd-for' || attr.name === 'fdfor'
+    );
+    return fdForIdx > -1;
+  }
+
   private _compile(component: Component) {
     if (this.documentRoot.childNodes.length > 1) {
-      const rootNode = this.processNode(this.documentRoot, component);
+      const [rootNode] = this.processNode(this.documentRoot, component);
       rootNode.tag = 'div';
       return rootNode;
     }
@@ -52,51 +59,72 @@ export class HtmlToFastDomCompiler {
         textValue: ''
       };
     }
-    return this.processNode(root, component);
+    return this.processNode(root, component)[0];
   }
 
-  processNode(node: parse5.DefaultTreeNode, component: Component): FastDomNode {
+  processNode(
+    node: parse5.DefaultTreeNode,
+    component: Component
+  ): FastDomNode[] {
     if (this.isTextNode(node)) {
-      return {
-        tag: 'textNode',
-        textValue: this.processReactiveValue(node.value, component)
-      };
+      return [
+        {
+          tag: 'textNode',
+          textValue: this.processReactiveValue(node.value, component)
+        }
+      ];
     }
     if (!this.isElementNode(node) && !this.isDocumentFragment(node)) {
       return null;
     }
     if (this.isDocumentFragment(node)) {
-      return {
-        tag: null,
-        children: Array.from(node.childNodes).map(child =>
-          this.processNode(child, component)
-        )
-      };
+      return [
+        {
+          tag: null,
+          children: this.processChildren(node, component)
+        }
+      ];
+    }
+    if (this.isFdFor(node)) {
+      return this.processNodeFdFor(node, component);
     }
     const attrs = this.processAttrs(node, component);
     if (node.childNodes.length === 1 && this.isTextNode(node.childNodes[0])) {
-      return {
-        tag: node.tagName.toLowerCase(),
-        textValue: this.processReactiveValue(
-          (node.childNodes[0] as parse5.DefaultTreeTextNode).value,
-          component
-        ),
-        ...attrs
-      };
+      return [
+        {
+          tag: node.tagName.toLowerCase(),
+          textValue: this.processReactiveValue(
+            (node.childNodes[0] as parse5.DefaultTreeTextNode).value,
+            component
+          ),
+          ...attrs
+        }
+      ];
     }
     if (node.childNodes.length === 0) {
-      return {
-        tag: node.tagName.toLowerCase(),
-        ...attrs
-      };
+      return [
+        {
+          tag: node.tagName.toLowerCase(),
+          ...attrs
+        }
+      ];
     }
-    return {
-      tag: node.tagName.toLowerCase(),
-      ...attrs,
-      children: Array.from(node.childNodes).map(child =>
-        this.processNode(child, component)
-      )
-    };
+    return [
+      {
+        tag: node.tagName.toLowerCase(),
+        ...attrs,
+        children: this.processChildren(node, component)
+      }
+    ];
+  }
+
+  private processChildren(
+    node: parse5.DefaultTreeElement | parse5.DefaultTreeDocumentFragment,
+    component: Component
+  ) {
+    return Array.from(node.childNodes)
+      .map(child => this.processNode(child, component))
+      .reduce((memo, arr) => memo.concat(arr));
   }
 
   private getReactiveName(input: string): string | null {
@@ -127,7 +155,7 @@ export class HtmlToFastDomCompiler {
     const name = this.getReactiveName(input);
     if (name) {
       if (!(name in component[reactiveType])) {
-        throw new CompilerError(component, reactiveType, name);
+        throw new CompilerErrorReactive(component, reactiveType, name);
       }
       return component[reactiveType][name];
     }
@@ -140,44 +168,22 @@ export class HtmlToFastDomCompiler {
   ): any {
     const data = node.attrs.reduce(
       (memo, attr) => {
+        if (attr.name.startsWith('fdfor') || attr.name.startsWith('fd-for')) {
+          return memo;
+        }
         if (attr.name === 'value') {
-          const props = memo.props || {};
-          props.value = this.processReactiveValue(attr.value, component);
-          return {
-            ...memo,
-            props
-          };
+          return this.processAttributeValue(attr, memo, component);
         }
         if (attr.name === 'style') {
-          const val = attr.value;
-          if (!val) {
-            return memo;
-          }
-          return {
-            ...memo,
-            styles: this.processReactiveValue(val, component, 'fdStyles')
-          };
+          return this.processAttributeStyle(attr, memo, component);
         }
         if (attr.name === 'class') {
-          const attrValue = attr.value;
-          const reactiveName = this.getReactiveName(attrValue);
-
-          if (reactiveName) {
-            return {
-              ...memo,
-              classList: this.processReactiveValue(
-                attrValue,
-                component,
-                'fdObjects'
-              )
-            };
-          }
-          return {
-            ...memo,
-            classList: attr.value.split(' ')
-          };
+          return this.processAttributeClass(attr, memo, component);
         }
-        // TODO: process fdIf and fdFor
+        // fdIf
+        if (attr.name === 'fdif' || attr.name === 'fd-if') {
+          return this.processAttributeFdIf(attr, memo, component);
+        }
         const attrs = memo.attrs || {};
         attrs[attr.name] = this.processReactiveValue(attr.value, component);
         return {
@@ -196,5 +202,104 @@ export class HtmlToFastDomCompiler {
     }
 
     return data;
+  }
+
+  private processAttributeFdIf(
+    attr: parse5.Attribute,
+    memo: any,
+    component: Component
+  ) {
+    const name = this.getReactiveName(attr.value);
+    if (!name || !(name in component.reactive)) {
+      throw new CompilerErrorReactive(component, 'reactive', attr.name);
+    }
+    return {
+      ...memo,
+      show: component.reactive[name]
+    };
+  }
+
+  private processAttributeClass(
+    attr: parse5.Attribute,
+    memo: any,
+    component: Component
+  ) {
+    const attrValue = attr.value;
+    const reactiveName = this.getReactiveName(attrValue);
+
+    if (reactiveName) {
+      return {
+        ...memo,
+        classList: this.processReactiveValue(attrValue, component, 'fdObjects')
+      };
+    }
+    return {
+      ...memo,
+      classList: attr.value.split(' ')
+    };
+  }
+
+  private processAttributeValue(
+    attr: parse5.Attribute,
+    memo: any,
+    component: Component
+  ) {
+    const props = memo.props || {};
+    props.value = this.processReactiveValue(attr.value, component);
+    return {
+      ...memo,
+      props
+    };
+  }
+
+  private processAttributeStyle(
+    attr: parse5.Attribute,
+    memo: any,
+    component: Component
+  ) {
+    const val = attr.value;
+    if (!val) {
+      return memo;
+    }
+    return {
+      ...memo,
+      styles: this.processReactiveValue(val, component, 'fdStyles')
+    };
+  }
+
+  private processNodeFdFor(
+    node: parse5.DefaultTreeElement,
+    component: Component
+  ): FastDomNode[] {
+    const fdForAttrs = node.attrs.reduce(
+      (memo, attr) =>
+        attr.name === 'fdfor' ||
+        attr.name === 'fd-for' ||
+        attr.name === 'fdForKey'
+          ? {
+              ...memo,
+              [attr.name]: attr.value
+            }
+          : memo,
+      {}
+    );
+    const fdForValue = fdForAttrs['fdfor'] || fdForAttrs['fd-for'];
+    const reactiveName = this.getReactiveName(fdForValue);
+
+    let arr: any;
+    if (reactiveName) {
+      if (!(reactiveName in component.reactive)) {
+        throw new CompilerErrorReactive(component, 'reactive', reactiveName);
+      }
+      arr = component.reactive[reactiveName];
+    } else {
+      try {
+        arr = JSON.parse(fdForValue);
+      } catch (e) {
+        throw new CompilerErrorAttr(component, 'reactive', name);
+      }
+    }
+
+    return [];
   }
 }
