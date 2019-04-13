@@ -220,6 +220,9 @@ export class HtmlToFastDomCompiler {
         if (attr.name === 'fdif' || attr.name === 'fd-if') {
           return this.processAttributeFdIf(attr, memo, component, context);
         }
+        if (attr.name.startsWith('fdon')) {
+          return this.processAddributeFdOn(attr, memo, component, context);
+        }
         const attrs = memo.attrs || {};
         attrs[attr.name] = this.processReactiveValue(
           attr.value,
@@ -304,6 +307,30 @@ export class HtmlToFastDomCompiler {
       ...memo,
       props
     };
+  }
+
+  private processAddributeFdOn(
+    attr: parse5.Attribute,
+    memo: any,
+    component: Component,
+    context: any
+  ) {
+    const eventName = attr.name.substring(4); // 'fdon'.length
+    const listeners = memo.listeners || {};
+    const name = this.getReactiveName(attr.value);
+
+    if (!name || typeof component[name] !== 'function') {
+      throw new CompilerError(
+        component,
+        `fdOn must be a function, got ${
+          component.constructor.name
+        }[name] = ${component[name]}`
+      );
+    }
+
+    listeners[eventName] = component[name];
+    memo.listeners = listeners;
+    return memo;
   }
 
   private processAttributeStyle(

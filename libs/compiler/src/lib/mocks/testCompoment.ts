@@ -12,7 +12,7 @@ export class TestComponent extends Component {
     src: fdValue('https://www.w3schools.com/html/pic_trulli.jpg'),
     disabled: fdIf(false),
     array: fdValue([1, 2]),
-    arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
+    arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
   };
 
   fdObjects = {
@@ -33,19 +33,13 @@ export class TestComponent extends Component {
     return item.key;
   }
 
-  changeBtnClick = () => {
-    this.reactive.disabled.value = !this.reactive.disabled.value;
-  };
-
   onClick = () => {
     this.reactive.bgFirstColor.value =
       '#' + (((1 << 24) * Math.random()) | 0).toString(16);
   };
 
-  onClickSecond = () => {
-    this.reactive.bgSecondColor.value =
-      'background-color: #' +
-      (((1 << 24) * Math.random()) | 0).toString(16) +
-      ';user-select: none;';
-  };
+  onInput = (e: any) => {
+    this.reactive.inputValue.value = e.target.value;
+  }
+
 }
