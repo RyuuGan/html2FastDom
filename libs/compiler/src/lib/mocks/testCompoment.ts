@@ -13,6 +13,11 @@ export class TestComponent extends Component {
     disabled: fdIf(false),
     array: fdValue([1, 2]),
     arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
+    object: fdValue({
+      val: new Observer('some value'),
+      disabled: fdIf(false),
+      arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
+    })
   };
 
   fdObjects = {
@@ -41,5 +46,12 @@ export class TestComponent extends Component {
   onInput = (e: any) => {
     this.reactive.inputValue.value = e.target.value;
   }
+
+  // tslint:disable
+  events = {
+    onClick: this.onClick,
+    onInput: this.onInit,
+  };
+  // tslint:enable
 
 }

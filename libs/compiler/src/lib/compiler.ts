@@ -187,14 +187,38 @@ export class HtmlToFastDomCompiler {
     reactiveType: string,
     context: any
   ) {
-    if (name in context) {
-      return context[name];
+    try {
+      const contextValue = this.getValueDeep(component, context, name);
+      if (!!contextValue) {
+        return contextValue;
+      }
+    } catch {}
+    try {
+      return this.getValueDeep(component, component[reactiveType], name);
+    } catch {
+      throw new CompilerErrorReactive(component, reactiveType, name);
     }
-    if (name in component[reactiveType]) {
-      return component[reactiveType][name];
-    }
+  }
 
-    throw new CompilerErrorReactive(component, reactiveType, name);
+  private getValueDeep(component: Component, context: any, name: string) {
+    const names = name.split('.');
+    let current = context;
+    for (let i = 0; i < names.length; i++) {
+      if (!names[i]) {
+        throw new CompilerError(component, `Invalid name ${name} to lookup.`);
+      }
+
+      if (current === null || current === undefined || !(names[i] in current)) {
+        throw new CompilerError(
+          component,
+          `Invalid reference for ${name} to lookup. Cannot read ${
+            names[i]
+          } of ${current}`
+        );
+      }
+      current = current[names[i]];
+    }
+    return current;
   }
 
   private processAttrs(
@@ -255,12 +279,13 @@ export class HtmlToFastDomCompiler {
     context: any
   ) {
     const name = this.getReactiveName(attr.value);
-    if (!name || !(name in component.reactive)) {
+    if (!name) {
       throw new CompilerErrorReactive(component, 'reactive', attr.name);
     }
+    const show = this.getValue(name, component, 'reactive', context);
     return {
       ...memo,
-      show: component.reactive[name]
+      show
     };
   }
 
@@ -319,16 +344,30 @@ export class HtmlToFastDomCompiler {
     const listeners = memo.listeners || {};
     const name = this.getReactiveName(attr.value);
 
-    if (!name || typeof component[name] !== 'function') {
+    if (!name) {
       throw new CompilerError(
         component,
-        `fdOn must be a function, got ${
-          component.constructor.name
-        }[name] = ${component[name]}`
+        `fdOn must be a function, got ${component.constructor.name}[${name}] = ${
+          component[name]
+        }`
       );
     }
+    let eventFn: any;
+    try {
+      eventFn = this.getValueDeep(component, context, name);
+    } catch {
+      eventFn = this.getValueDeep(component, component, name);
+    }
 
-    listeners[eventName] = component[name];
+    if (typeof eventFn !== 'function') {
+      throw new CompilerError(
+        component,
+        `fdOn must be a function, got ${component.constructor.name}[${name}] = ${
+          component[name]
+        }`
+      );
+    }
+    listeners[eventName] = eventFn;
     memo.listeners = listeners;
     return memo;
   }
@@ -369,17 +408,18 @@ export class HtmlToFastDomCompiler {
 
     let arr: any;
     if (reactiveName) {
-      if (!(reactiveName in component.reactive)) {
+      try {
+        arr = this.getValue(reactiveName, component, 'reactive', context);
+      } catch {
         throw new CompilerErrorReactive(component, 'reactive', reactiveName);
       }
-      arr = component.reactive[reactiveName];
     } else {
       try {
         arr = JSON.parse(fdForValue);
         if (!Array.isArray(arr)) {
           throw new Error('Not Array');
         }
-      } catch (e) {
+      } catch {
         throw new CompilerErrorAttr(component, 'fdFor', 'an array');
       }
     }
@@ -389,18 +429,27 @@ export class HtmlToFastDomCompiler {
 
     if (fdForKeyValue) {
       const name = this.getReactiveName(fdForKeyValue);
-      if (!name || typeof component[name] !== 'function') {
+      if (!name) {
         throw new CompilerError(
           component,
           `fdKeyFor must be a function, got ${
             component.constructor.name
-          }[name] = ${component[name]}`
+          }[${name}] = ${name}`
         );
       }
-      keyFn = component[name];
+      keyFn = this.getValueDeep(component, component, name);
+
+      if (typeof keyFn !== 'function') {
+        throw new CompilerError(
+          component,
+          `fdOn must be a function, got ${component.constructor.name}[${name}] = ${
+            component[name]
+          }`
+        );
+      }
     }
     // TODO: add fdFor overrides for variables name
-
+    // TODO: add inputs args, currently not supported
     node.attrs = node.attrs.filter(
       v => !HtmlToFastDomCompiler.fdForAttribs.includes(v.name)
     );
@@ -413,7 +462,9 @@ export class HtmlToFastDomCompiler {
           index
         })[0];
       },
-      [],
+      [
+        (e: any) => e,
+      ],
       keyFn
     );
   }
