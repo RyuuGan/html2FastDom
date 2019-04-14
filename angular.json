@@ -7,7 +7,7 @@
       "root": "libs/compiler",
       "sourceRoot": "libs/compiler/src",
       "projectType": "library",
-      "prefix": "html2FastDom2",
+      "prefix": "html2FastDom",
       "architect": {
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
@@ -33,7 +33,7 @@
       "root": "apps/demo/",
       "sourceRoot": "apps/demo/src",
       "projectType": "application",
-      "prefix": "html2FastDom2",
+      "prefix": "html2FastDom",
       "schematics": {},
       "architect": {
         "build": {

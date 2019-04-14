@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@html2FastDom2/compiler": [
+      "@html2FastDom/compiler": [
         "libs/compiler/src/index.ts"
       ]
     }

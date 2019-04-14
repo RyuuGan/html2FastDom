@@ -6,7 +6,7 @@ import {
   fdValue
 } from 'faster-dom';
 
-import { HtmlToFastDomCompiler } from '@html2FastDom2/compiler';
+import { HtmlToFastDomCompiler } from '@html2FastDom/compiler';
 
 // tslint:disable:no-bitwise
 class StylesComponent extends Component {

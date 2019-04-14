@@ -1,7 +1,7 @@
 import { createCounter } from './simpleCounter';
 import { Component, FastDomNode, createComponent } from 'faster-dom';
 
-import { HtmlToFastDomCompiler } from '@html2FastDom2/compiler';
+import { HtmlToFastDomCompiler } from '@html2FastDom/compiler';
 
 class SimpleForComponent extends Component {
 

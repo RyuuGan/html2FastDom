@@ -1,5 +1,5 @@
 {
-  "npmScope": "html2FastDom2",
+  "npmScope": "html2FastDom",
   "implicitDependencies": {
     "angular.json": "*",
     "package.json": "*",

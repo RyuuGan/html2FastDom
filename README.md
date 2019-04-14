@@ -1,4 +1,4 @@
-# Html2FastDom2
+# Html2FastDom
 
 This project was generated using [Nx](https://nx.dev).
 

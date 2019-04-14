@@ -1,6 +1,6 @@
 import { Component, FastDomNode, createComponent, fdValue } from 'faster-dom';
 
-import { HtmlToFastDomCompiler } from '@html2FastDom2/compiler';
+import { HtmlToFastDomCompiler } from '@html2FastDom/compiler';
 
 class Counter extends Component {
     width = 100;
