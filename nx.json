@@ -10,6 +10,12 @@
   "projects": {
     "compiler": {
       "tags": []
+    },
+    "demo": {
+      "tags": []
+    },
+    "demo-e2e": {
+      "tags": []
     }
   }
 }
