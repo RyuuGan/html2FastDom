@@ -1,41 +1,32 @@
 # Html2FastDom
 
-This project was generated using [Nx](https://nx.dev).
+Simple helper to compile HTML to [FastDom](https://github.com/PxyUp/FastDom/):
 
-<p align="center"><img src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png" width="450"></p>
+# Usage
 
-🔎 **Nx is a set of Angular CLI power-ups for modern development.**
+```
+class SimpleForComponent extends Component {
 
-## Quick Start & Documentation
+  template: FastDomNode = new HtmlToFastDomCompiler(
+    `<div fdFor="[1, 2, 3, 4, 5, 6, 7]">
+       <span>Item</span>
+       <span>{{item}}</span>
+       <span>&mdash;</span>
+       <span>index</span>
+       <span>{{index}}</span>
+     <div>`
+  ).compile(this);
+}
 
-[30-minute video showing all Nx features](https://nx.dev/getting-started/what-is-nx)
+export function createSimpleFor() {
+  return createComponent(SimpleForComponent);
+}
+```
 
-[Interactive tutorial](https://nx.dev/tutorial/01-create-application)
+More examples at [demo project](https://github.com/RyuuGan/html2FastDom/tree/master/apps/demo/src/app/components) in source code.
 
-## Generate your first application
+# Demo
 
-Run `ng g app myapp` to generate an application. When using Nx, you can create multiple applications and libraries in the same CLI workspace.
-
-## Development server
-
-Run `ng serve myapp` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name --project=myapp` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build myapp` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Jest](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Cypress](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+1. Clone the project
+2. Install dependencies: `npm i`
+3 Run demo: `npm start`
