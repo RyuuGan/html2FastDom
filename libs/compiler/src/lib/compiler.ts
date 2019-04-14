@@ -97,7 +97,7 @@ export class HtmlToFastDomCompiler {
       return [
         {
           tag: null,
-          children: this.processChildren(node, component)
+          children: this.processChildren(node, component, context)
         }
       ];
     }
@@ -131,17 +131,18 @@ export class HtmlToFastDomCompiler {
       {
         tag: node.tagName.toLowerCase(),
         ...attrs,
-        children: this.processChildren(node, component)
+        children: this.processChildren(node, component, context)
       }
     ];
   }
 
   private processChildren(
     node: parse5.DefaultTreeElement | parse5.DefaultTreeDocumentFragment,
-    component: Component
+    component: Component,
+    context: any,
   ) {
     return Array.from(node.childNodes)
-      .map(child => this.processNode(child, component))
+      .map(child => this.processNode(child, component, context))
       .reduce((memo, arr) => memo.concat(arr));
   }
 
@@ -189,7 +190,7 @@ export class HtmlToFastDomCompiler {
   ) {
     try {
       const contextValue = this.getValueDeep(component, context, name);
-      if (!!contextValue) {
+      if (typeof contextValue !== undefined) {
         return contextValue;
       }
     } catch {}
