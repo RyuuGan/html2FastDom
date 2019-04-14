@@ -1,7 +1,10 @@
 import { Component, FastDomNode, createComponent, fdValue } from 'faster-dom';
 
-import { HtmlToFastDomCompiler } from '@html2FastDom/compiler';
+import { HtmlComponent } from '@html2FastDom/compiler';
 
+@HtmlComponent({
+  template: `<button fdOnClick="{{onClick}}">{{counter}}</button>`
+})
 class Counter extends Component {
     width = 100;
 
@@ -16,10 +19,6 @@ class Counter extends Component {
     onClick = () => {
         this.counter.value += 1;
     }
-
-    template: FastDomNode =  new HtmlToFastDomCompiler(
-      `<button fdOnClick="{{onClick}}">{{counter}}</button>`
-    ).compile(this);
 }
 
 export function createCounter() {
