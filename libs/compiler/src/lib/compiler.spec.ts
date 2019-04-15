@@ -404,6 +404,63 @@ describe('Compiler', () => {
       });
     });
 
+    it('should compile nested fdFor', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdFor="[1,2,3]"><div fdFor="[4,5]">{{item}}</div></div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+
+      expect(fastDomNode.children.length).toEqual(3);
+      expect(fastDomNode.children[0]).toEqual({
+        fdKey: expect.anything(),
+        tag: 'div',
+        children: [
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 4
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 5
+          }
+        ]
+      });
+      expect(fastDomNode.children[1]).toEqual({
+        fdKey: expect.anything(),
+        tag: 'div',
+        children: [
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 4
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 5
+          }
+        ]
+      });
+      expect(fastDomNode.children[2]).toEqual({
+        fdKey: expect.anything(),
+        tag: 'div',
+        children: [
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 4
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 5
+          }
+        ]
+      });
+    });
+
     it('should compile fdFor attribute with reference to key function', () => {
       const compiler = new HtmlToFastDomCompiler(
         '<div fdFor="{{arrayKV}}" fdForKey="{{keyFn}}">someText</div>'

@@ -51,7 +51,7 @@ export class HtmlToFastDomCompiler {
     return fdForIdx > -1;
   }
 
-  private _compile(component: Component, context: any = {}) {
+  private _compile(component: Component, context: any = component) {
     if (this.documentRoot.childNodes.length > 1) {
       const [rootNode] = this.processNode(this.documentRoot, component);
       rootNode.tag = 'div';
@@ -75,7 +75,8 @@ export class HtmlToFastDomCompiler {
   processNode(
     node: parse5.DefaultTreeNode,
     component: Component,
-    context: any = {}
+    context: any = {},
+    skipArray = false
   ): FastDomNode[] {
     if (this.isTextNode(node)) {
       return [
@@ -101,7 +102,7 @@ export class HtmlToFastDomCompiler {
         }
       ];
     }
-    if (this.isFdFor(node)) {
+    if (this.isFdFor(node) && !skipArray) {
       return this.processNodeFdFor(node, component, context);
     }
     const attrs = this.processAttrs(node, component, context);
@@ -139,7 +140,7 @@ export class HtmlToFastDomCompiler {
   private processChildren(
     node: parse5.DefaultTreeElement | parse5.DefaultTreeDocumentFragment,
     component: Component,
-    context: any,
+    context: any
   ) {
     return Array.from(node.childNodes)
       .map(child => this.processNode(child, component, context))
@@ -348,9 +349,9 @@ export class HtmlToFastDomCompiler {
     if (!name) {
       throw new CompilerError(
         component,
-        `fdOn must be a function, got ${component.constructor.name}[${name}] = ${
-          component[name]
-        }`
+        `fdOn must be a function, got ${
+          component.constructor.name
+        }[${name}] = ${component[name]}`
       );
     }
     let eventFn: any;
@@ -363,9 +364,9 @@ export class HtmlToFastDomCompiler {
     if (typeof eventFn !== 'function') {
       throw new CompilerError(
         component,
-        `fdOn must be a function, got ${component.constructor.name}[${name}] = ${
-          component[name]
-        }`
+        `fdOn must be a function, got ${
+          component.constructor.name
+        }[${name}] = ${component[name]}`
       );
     }
     listeners[eventName] = eventFn;
@@ -443,30 +444,33 @@ export class HtmlToFastDomCompiler {
       if (typeof keyFn !== 'function') {
         throw new CompilerError(
           component,
-          `fdOn must be a function, got ${component.constructor.name}[${name}] = ${
-            component[name]
-          }`
+          `fdOn must be a function, got ${
+            component.constructor.name
+          }[${name}] = ${component[name]}`
         );
       }
     }
     // TODO: add fdFor overrides for variables name
     // TODO: add inputs args, currently not supported
-    node.attrs = node.attrs.filter(
-      v => !HtmlToFastDomCompiler.fdForAttribs.includes(v.name)
-    );
     return fdFor(
       arr,
       (item, index) => {
-        return this.processNode(node, component, {
+        const nodes = this.processNode(node, component, {
           ...context,
           item,
           index
-        })[0];
+        }, true);
+        return nodes[0];
       },
-      [
-        (e: any) => e,
-      ],
+      [(e: any) => e],
       keyFn
     );
   }
+
+  /*
+    arr.substring(1, arr.length - 1)
+      .split(",")
+      .map(e => e.trim())
+      .map(e => /[a-zA-Z_-]/.test(e) ? window[e] : JSON.parse(e))
+  */
 }

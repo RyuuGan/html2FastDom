@@ -16,6 +16,7 @@ import { HtmlComponent } from '@html2FastDom/compiler';
 })
 // tslint:disable:no-bitwise
 class StylesComponent extends Component {
+
   reactive = {
     bgFirstColor: fdValue('#' + (((1 << 24) * Math.random()) | 0).toString(16)),
     bgSecondColor: fdValue(
