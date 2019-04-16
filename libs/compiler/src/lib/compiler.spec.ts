@@ -461,6 +461,45 @@ describe('Compiler', () => {
       });
     });
 
+    it('should compile 2 fdFor in a row', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdFor="[1,2,3]">{{item}}</div><div fdFor="[4,5]">{{item}}</div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+
+      expect(fastDomNode.children.length).toEqual(5);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        children: [
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 1
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 2
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 3
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 4
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            textValue: 5
+          }
+        ]
+      });
+    });
+
     it('should compile fdFor attribute with reference to key function', () => {
       const compiler = new HtmlToFastDomCompiler(
         '<div fdFor="{{arrayKV}}" fdForKey="{{keyFn}}">someText</div>'
