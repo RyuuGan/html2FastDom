@@ -12,9 +12,16 @@ import { HtmlComponent } from '@html2FastDom/compiler';
         <span>index</span>
         <span>{{index}}</span>
 
-        <div fdFor="[8, 9, 10]">
-          <span>SubItem</span>
+        <div fdFor="[8, 9, 10]" letIndex="subIndex" letItem="subItem">
+          <span>Parent item</span>
           <span>{{item}}</span>
+          <span>Parent index</span>
+          <span>{{index}}</span>
+          <span>&mdash;</span>
+          <span>SubItem</span>
+          <span>{{subItem}}</span>
+          <span>SubIndex</span>
+          <span>{{subIndex}}</span>
         </div>
       </div>
     </div>

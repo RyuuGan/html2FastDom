@@ -11,12 +11,12 @@ import { HtmlComponent } from '@html2FastDom/compiler';
       <span>index</span>
       <span>{{index}}</span>
     </div>
-    <div fdFor="[5, 6, 7]">
+    <div fdFor="[5, 6, 7]" letIndex="idx" letItem="itm">
       <span>Item</span>
-      <span>{{item}}</span>
+      <span>{{itm}}</span>
       <span>&mdash;</span>
       <span>index</span>
-      <span>{{index}}</span>
+      <span>{{idx}}</span>
     </div>`
 })
 class SimpleForAfterForComponent extends Component {}

@@ -12,7 +12,14 @@ export class HtmlToFastDomCompiler {
     this.documentRoot = parse5.parseFragment(html) as any;
   }
 
-  private static fdForAttribs = ['fdfor', 'fd-for', 'fdforkey', 'fd-for-key'];
+  private static fdForAttribs = [
+    'fdfor',
+    'fd-for',
+    'fdforkey',
+    'fd-for-key',
+    'letindex',
+    'letitem'
+  ];
   documentRoot: parse5.DefaultTreeDocumentFragment;
 
   compile(component: Component): FastDomNode;
@@ -53,7 +60,11 @@ export class HtmlToFastDomCompiler {
 
   private _compile(component: Component, context: any = component) {
     if (this.documentRoot.childNodes.length > 1) {
-      const [rootNode] = this.processNode(this.documentRoot, component, context);
+      const [rootNode] = this.processNode(
+        this.documentRoot,
+        component,
+        context
+      );
       rootNode.tag = 'div';
       return rootNode;
     }
@@ -65,7 +76,11 @@ export class HtmlToFastDomCompiler {
       };
     }
     if (this.isElementNode(root) && this.isFdFor(root)) {
-      const [rootNode] = this.processNode(this.documentRoot, component, context);
+      const [rootNode] = this.processNode(
+        this.documentRoot,
+        component,
+        context
+      );
       rootNode.tag = 'div';
       return rootNode;
     }
@@ -231,6 +246,9 @@ export class HtmlToFastDomCompiler {
     const data = node.attrs.reduce(
       (memo, attr) => {
         if (attr.name.startsWith('fdfor') || attr.name.startsWith('fd-for')) {
+          return memo;
+        }
+        if (attr.name.startsWith('let')) {
           return memo;
         }
         if (attr.name === 'value') {
@@ -450,16 +468,23 @@ export class HtmlToFastDomCompiler {
         );
       }
     }
+    const indexName = fdForAttrs['letindex'] || 'index';
+    const itemName = fdForAttrs['letitem'] || 'item';
     // TODO: add fdFor overrides for variables name
     // TODO: add inputs args, currently not supported
     return fdFor(
       arr,
       (item, index) => {
-        const nodes = this.processNode(node, component, {
-          ...context,
-          item,
-          index
-        }, true);
+        const nodes = this.processNode(
+          node,
+          component,
+          {
+            ...context,
+            [itemName]: item,
+            [indexName]: index
+          },
+          true
+        );
         return nodes[0];
       },
       [(e: any) => e],
