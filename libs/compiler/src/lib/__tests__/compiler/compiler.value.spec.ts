@@ -1,7 +1,7 @@
 import { fdObject } from 'faster-dom';
 import { HtmlToFastDomCompiler } from '../../compiler';
 import { CompilerErrorReactive } from '../../compilerError';
-import { TestComponent } from '../../mocks/testCompoment';
+import { TestComponent } from '../mocks/testCompoment';
 
 const comp = new TestComponent();
 

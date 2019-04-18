@@ -50,7 +50,7 @@ export class CompilerErrorAttr extends CompilerError {
     // 'Error' breaks prototype chain here
     super(
       component,
-      `Attribute ${attr} at ${component.constructor.name} must be ${msg}.`
+      `Attribute ${attr} at ${component.constructor.name} ${msg}.`
     );
 
     // restore prototype chain

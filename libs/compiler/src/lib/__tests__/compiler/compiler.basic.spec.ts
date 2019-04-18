@@ -1,5 +1,5 @@
 import { HtmlToFastDomCompiler } from '../../compiler';
-import { TestComponent } from '../../mocks/testCompoment';
+import { TestComponent } from '../mocks/testCompoment';
 
 const comp = new TestComponent();
 

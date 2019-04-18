@@ -1,6 +1,6 @@
 import { HtmlToFastDomCompiler } from '../../compiler';
 import { CompilerError, CompilerErrorReactive } from '../../compilerError';
-import { TestComponent } from '../../mocks/testCompoment';
+import { TestComponent } from '../mocks/testCompoment';
 
 const comp = new TestComponent();
 

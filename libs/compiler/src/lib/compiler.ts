@@ -1,14 +1,15 @@
-import { Component, FastDomNode, fdObject, Observer, fdFor } from 'faster-dom';
+import { Component, FastDomNode, fdFor, fdObject, Observer } from 'faster-dom';
 import * as parse5 from 'parse5';
 import { isElementNode, isTextNode } from 'parse5/lib/tree-adapters/default';
 import {
-  CompilerErrorReactive,
+  CompilerError,
   CompilerErrorAttr,
-  CompilerError
+  CompilerErrorReactive
 } from './compilerError';
+import { ComponentMap } from './types';
 
 export class HtmlToFastDomCompiler {
-  constructor(public html: string) {
+  constructor(public html: string, public componentMap: ComponentMap = {}) {
     this.documentRoot = parse5.parseFragment(html) as any;
   }
 
@@ -120,11 +121,17 @@ export class HtmlToFastDomCompiler {
     if (this.isFdFor(node) && !skipArray) {
       return this.processNodeFdFor(node, component, context);
     }
+    const tagName = node.tagName.toLowerCase();
+    const componentFactory = this.componentMap[tagName];
+    if (componentFactory) {
+      const args = this.processComponentFactoryArgs(component, node, context);
+      return [componentFactory(...args)];
+    }
     const attrs = this.processAttrs(node, component, context);
     if (node.childNodes.length === 1 && this.isTextNode(node.childNodes[0])) {
       return [
         {
-          tag: node.tagName.toLowerCase(),
+          tag: tagName,
           textValue: this.processReactiveValue(
             (node.childNodes[0] as parse5.DefaultTreeTextNode).value,
             component,
@@ -138,14 +145,14 @@ export class HtmlToFastDomCompiler {
     if (node.childNodes.length === 0) {
       return [
         {
-          tag: node.tagName.toLowerCase(),
+          tag: tagName,
           ...attrs
         }
       ];
     }
     return [
       {
-        tag: node.tagName.toLowerCase(),
+        tag: tagName,
         ...attrs,
         children: this.processChildren(node, component, context)
       }
@@ -440,7 +447,7 @@ export class HtmlToFastDomCompiler {
           throw new Error('Not Array');
         }
       } catch {
-        throw new CompilerErrorAttr(component, 'fdFor', 'an array');
+        throw new CompilerErrorAttr(component, 'fdFor', 'must be an array');
       }
     }
 
@@ -490,5 +497,41 @@ export class HtmlToFastDomCompiler {
       [(e: any) => e],
       keyFn
     );
+  }
+
+  private processComponentFactoryArgs(
+    component: Component,
+    node: parse5.DefaultTreeElement,
+    context: any
+  ): any[] {
+    const fdArgs = node.attrs.find(a => a.name === 'fdargs');
+    if (!fdArgs) {
+      return [];
+    }
+    const arr = fdArgs.value.trim();
+    if (arr[0] !== '[' || arr[arr.length - 1] !== ']') {
+      throw new CompilerErrorAttr(component, 'fdArgs', 'must be an array');
+    }
+    const args = arr
+      .substring(1, arr.length - 1)
+      .split(',')
+      .map(value => {
+        const e = value.trim();
+        if (/^[a-zA-Z_][a-zA-Z_\.-]*$/.test(e)) {
+          return this.getValueDeep(component, context, e);
+        } else {
+          try {
+            // with autoreplace for strings
+            return JSON.parse(e.replace(/'/g, '"'));
+          } catch {
+            throw new CompilerErrorAttr(
+              component,
+              'fdArgs',
+              `is invalid: can not parse ${e} as primitive value`
+            );
+          }
+        }
+      });
+    return args;
   }
 }
