@@ -16,7 +16,7 @@ import { HtmlComponent } from '@html2FastDom/compiler';
           <span>SubItem</span>
           <span>{{item}}</span>
         </div>
-      <div>
+      </div>
     </div>
     `
 })

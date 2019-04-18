@@ -53,7 +53,7 @@ export class HtmlToFastDomCompiler {
 
   private _compile(component: Component, context: any = component) {
     if (this.documentRoot.childNodes.length > 1) {
-      const [rootNode] = this.processNode(this.documentRoot, component);
+      const [rootNode] = this.processNode(this.documentRoot, component, context);
       rootNode.tag = 'div';
       return rootNode;
     }
@@ -65,7 +65,7 @@ export class HtmlToFastDomCompiler {
       };
     }
     if (this.isElementNode(root) && this.isFdFor(root)) {
-      const [rootNode] = this.processNode(this.documentRoot, component);
+      const [rootNode] = this.processNode(this.documentRoot, component, context);
       rootNode.tag = 'div';
       return rootNode;
     }
@@ -466,11 +466,4 @@ export class HtmlToFastDomCompiler {
       keyFn
     );
   }
-
-  /*
-    arr.substring(1, arr.length - 1)
-      .split(",")
-      .map(e => e.trim())
-      .map(e => /[a-zA-Z_-]/.test(e) ? window[e] : JSON.parse(e))
-  */
 }

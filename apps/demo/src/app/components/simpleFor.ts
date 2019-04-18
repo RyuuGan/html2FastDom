@@ -11,7 +11,7 @@ import { HtmlComponent } from '@html2FastDom/compiler';
       <span>&mdash;</span>
       <span>index</span>
       <span>{{index}}</span>
-    <div>`
+    </div>`
 })
 class SimpleForComponent extends Component {}
 
