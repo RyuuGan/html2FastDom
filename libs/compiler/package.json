@@ -1,0 +1,8 @@
+{
+  "name": "@html2FastDom/compiler",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "faster-dom": "0.0.39-alpha",
+    "parse5": "^5.1.0"
+  }
+}
