@@ -355,6 +355,86 @@ describe('Compiler', () => {
       });
     });
 
+    it('should compile fdFor attribute with reference to item and index', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdFor="{{array}}"><span>{{item}}</span><span>{{index}}</span></div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        children: expect.arrayContaining([
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            children: [
+              {
+                tag: 'span',
+                textValue: 1
+              },
+              {
+                tag: 'span',
+                textValue: 0
+              }
+            ]
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            children: [
+              {
+                tag: 'span',
+                textValue: 2
+              },
+              {
+                tag: 'span',
+                textValue: 1
+              }
+            ]
+          }
+        ])
+      });
+    });
+
+    it('should compile fdFor attribute with reference to item and index while renaming', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div fdFor="{{array}}" letItem="itm" letIndex="idx"><span>{{itm}}</span><span>{{idx}}</span></div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        children: expect.arrayContaining([
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            children: [
+              {
+                tag: 'span',
+                textValue: 1
+              },
+              {
+                tag: 'span',
+                textValue: 0
+              }
+            ]
+          },
+          {
+            fdKey: expect.anything(),
+            tag: 'div',
+            children: [
+              {
+                tag: 'span',
+                textValue: 2
+              },
+              {
+                tag: 'span',
+                textValue: 1
+              }
+            ]
+          }
+        ])
+      });
+    });
+
     it('should compile fd-for attribute with reference to reactive', () => {
       const compiler = new HtmlToFastDomCompiler(
         '<div><div fd-for="{{array}}">someText</div></div>'
