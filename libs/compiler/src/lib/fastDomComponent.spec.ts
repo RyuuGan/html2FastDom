@@ -1,7 +1,13 @@
 import { Component, fdValue } from 'faster-dom';
 import { HtmlComponent } from './fastDomComponent';
+import { defaultComponentRegistry } from './componentMapRegistry';
 
 describe('FastDomComponent', () => {
+
+  beforeEach(() => {
+    defaultComponentRegistry.remove('testcomponent');
+  });
+
   it('should compile template with decorator', () => {
     @HtmlComponent({
       template: `<div>{{value}}</div>`

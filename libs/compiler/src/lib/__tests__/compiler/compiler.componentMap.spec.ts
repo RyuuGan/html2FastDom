@@ -1,8 +1,13 @@
+import { Component, fdValue } from 'faster-dom';
 import { HtmlToFastDomCompiler } from '../../compiler';
-import { fdValue } from 'faster-dom';
+import { defaultComponentRegistry } from '../../componentMapRegistry';
+import { HtmlComponent } from '../../fastDomComponent';
+import {
+  createArrayItem,
+  createArrayItemWithoutTitle
+} from '../mocks/arrayItemComponent';
 import { createCounter } from '../mocks/simpleCounterComponent';
 import { TestComponent } from '../mocks/testCompoment';
-import { createArrayItem } from '../mocks/arrayItemComponent';
 
 const comp = new TestComponent();
 
@@ -82,7 +87,126 @@ describe('Compiler::componentMap', () => {
               textValue: 1
             }
           ]
+        }
+      ]
+    });
+  });
+
+  it('should compile component with args with componentMap from decorator', () => {
+    @HtmlComponent({
+      template: `<array-item fdFor="{{arrayKV}}" fdArgs="['Array item:', item, index]"/>`
+    })
+    class TestCmp extends Component {
+      reactive = {
+        arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
+      };
+    }
+
+    const component = new TestCmp();
+
+    expect(component.template).toEqual({
+      tag: 'div',
+      children: [
+        {
+          tag: 'div',
+          fdKey: expect.anything(),
+          instance: expect.anything(),
+          children: [
+            {
+              tag: 'span',
+              textValue: 'Array item:'
+            },
+            {
+              tag: 'span',
+              textValue: 1
+            },
+            {
+              tag: 'span',
+              textValue: 0
+            }
+          ]
         },
+        {
+          tag: 'div',
+          fdKey: expect.anything(),
+          instance: expect.anything(),
+          children: [
+            {
+              tag: 'span',
+              textValue: 'Array item:'
+            },
+            {
+              tag: 'span',
+              textValue: 2
+            },
+            {
+              tag: 'span',
+              textValue: 1
+            }
+          ]
+        }
+      ]
+    });
+  });
+
+  fit('should compile component with args with componentMap from decorator with provided factory', () => {
+    defaultComponentRegistry.remove('array-item');
+    defaultComponentRegistry.register(
+      'array-item',
+      createArrayItemWithoutTitle
+    );
+    @HtmlComponent({
+      template: `<array-item fdFor="{{arrayKV}}" fdArgs="[item, index]"/>`
+    })
+    class TestCmpFactory extends Component {
+      reactive = {
+        arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
+      };
+    }
+
+    const component = new TestCmpFactory();
+
+    expect(component.template).toEqual({
+      tag: 'div',
+      children: [
+        {
+          tag: 'div',
+          fdKey: expect.anything(),
+          instance: expect.anything(),
+          children: [
+            {
+              tag: 'span',
+              textValue: 'Array item:'
+            },
+            {
+              tag: 'span',
+              textValue: 1
+            },
+            {
+              tag: 'span',
+              textValue: 0
+            }
+          ]
+        },
+        {
+          tag: 'div',
+          fdKey: expect.anything(),
+          instance: expect.anything(),
+          children: [
+            {
+              tag: 'span',
+              textValue: 'Array item:'
+            },
+            {
+              tag: 'span',
+              textValue: 2
+            },
+            {
+              tag: 'span',
+              textValue: 1
+            }
+          ]
+        }
       ]
     });
   });
