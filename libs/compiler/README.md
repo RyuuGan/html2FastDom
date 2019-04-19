@@ -37,7 +37,7 @@ bootstrap('#counter', createCounter);
 ```
 
 `HtmlComponent` uses `componentMap` under the hood so every component described
-with this decorator is automatically registed in the component map.
+with this decorator is automatically registered in the component map.
 After defining the component via decorator you can access it via selector or by
 class name if selector is not specified:
 
