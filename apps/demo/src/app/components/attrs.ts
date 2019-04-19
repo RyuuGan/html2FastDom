@@ -16,7 +16,8 @@ import { HtmlComponent } from '@html2FastDom/compiler';
       <div>
         <img src="{{src}}"/>
       </div>
-    </div>`
+    </div>`,
+  selector: 'dynamic-attr'
 })
 class DynamicAttr extends Component {
   reactive = {

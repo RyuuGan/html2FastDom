@@ -12,11 +12,11 @@ import { HtmlComponent } from '@html2FastDom/compiler';
   template: `
     <div style="{{divFirstStyle}}" fdOnClick="{{onClick}}">Click me(change styles  object)</div>
     <div style="{{divSecondStyle}}" fdOnClick="{{onClickSecond}}">Click me(change css string)</div>
-  `
+  `,
+  selector: 'styles'
 })
 // tslint:disable:no-bitwise
 class StylesComponent extends Component {
-
   reactive = {
     bgFirstColor: fdValue('#' + (((1 << 24) * Math.random()) | 0).toString(16)),
     bgSecondColor: fdValue(

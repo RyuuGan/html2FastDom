@@ -17,7 +17,8 @@ import { HtmlComponent } from '@html2FastDom/compiler';
       <span>&mdash;</span>
       <span>index</span>
       <span>{{idx}}</span>
-    </div>`
+    </div>`,
+  selector: 'simple-for-after-for'
 })
 class SimpleForAfterForComponent extends Component {}
 

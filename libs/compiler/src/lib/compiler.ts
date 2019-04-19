@@ -518,7 +518,7 @@ export class HtmlToFastDomCompiler {
       .map(value => {
         const e = value.trim();
         if (/^[a-zA-Z_][a-zA-Z_\.-]*$/.test(e)) {
-          return this.getValueDeep(component, context, e);
+          return this.getValue(e, component, 'reactive', context);
         } else {
           try {
             // with autoreplace for strings

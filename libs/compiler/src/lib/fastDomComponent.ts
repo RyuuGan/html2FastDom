@@ -28,17 +28,18 @@ export function HtmlComponent(options: HtmlComponentOptions) {
     class HtmlComponentWithConstructor extends constructor {
       constructor(...args: any[]) {
         super(...args);
-        const isTypeError = !args.every((item, index) => {
-          return (
-            Object.getPrototypeOf(item) === Object.getPrototypeOf(meta[index]())
-          );
-        });
-        if (isTypeError) {
-          throw new CompilerError(
-            this as any,
-            'Constructor types are incompatible'
-          );
-        }
+        // TODO: maybe return this type check later - doesn't work with fdValue();
+        // const isTypeError = !args.every((item, index) => {
+        //   return (
+        //     Object.getPrototypeOf(item) === Object.getPrototypeOf(meta[index]())
+        //   );
+        // });
+        // if (isTypeError) {
+        //   throw new CompilerError(
+        //     this as any,
+        //     'Constructor types are incompatible'
+        //   );
+        // }
       }
       template: FastDomNode = templateFn(this as any);
     }

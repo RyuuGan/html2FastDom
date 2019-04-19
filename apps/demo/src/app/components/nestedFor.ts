@@ -25,10 +25,10 @@ import { HtmlComponent } from '@html2FastDom/compiler';
         </div>
       </div>
     </div>
-    `
+    `,
+  selector: 'nested-for'
 })
-class NestedForComponent extends Component {
-}
+class NestedForComponent extends Component {}
 
 export function createNestedFor() {
   return createComponent(NestedForComponent);
