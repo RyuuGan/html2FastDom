@@ -5,13 +5,7 @@ import { HtmlComponent } from '@html2FastDom/compiler';
 
 @HtmlComponent({
   template: `
-    <div fdFor="[1, 2, 3, 4, 5, 6, 7]">
-      <span>Item</span>
-      <span>{{item}}</span>
-      <span>&mdash;</span>
-      <span>index</span>
-      <span>{{index}}</span>
-    </div>`,
+    <div fdFor="[1, 2, 3, 4, 5, 6, 7]">Item {{item}} &mdash; index {{index}}</div>`,
   selector: 'simple-for'
 })
 class SimpleForComponent extends Component {}

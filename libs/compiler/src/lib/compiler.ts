@@ -95,17 +95,7 @@ export class HtmlToFastDomCompiler {
     skipArray = false
   ): FastDomNode[] {
     if (this.isTextNode(node)) {
-      return [
-        {
-          tag: 'textNode',
-          textValue: this.processReactiveValue(
-            node.value,
-            component,
-            context,
-            'reactive'
-          )
-        }
-      ];
+      return this.processTextNode(node, component, context);
     }
     if (!this.isElementNode(node) && !this.isDocumentFragment(node)) {
       return null;
@@ -129,15 +119,16 @@ export class HtmlToFastDomCompiler {
     }
     const attrs = this.processAttrs(node, component, context);
     if (node.childNodes.length === 1 && this.isTextNode(node.childNodes[0])) {
+      const children = this.processTextNode(
+        node.childNodes[0] as parse5.DefaultTreeTextNode,
+        component,
+        context
+      );
       return [
         {
           tag: tagName,
-          textValue: this.processReactiveValue(
-            (node.childNodes[0] as parse5.DefaultTreeTextNode).value,
-            component,
-            context,
-            'reactive'
-          ),
+          textValue: children.length === 1 ? children[0].textValue : undefined,
+          children: children.length !== 1 ? children : undefined,
           ...attrs
         }
       ];
@@ -157,6 +148,43 @@ export class HtmlToFastDomCompiler {
         children: this.processChildren(node, component, context)
       }
     ];
+  }
+
+  private processTextNode(
+    node: parse5.DefaultTreeTextNode,
+    component: Component,
+    context: any
+  ): FastDomNode[] {
+    const split = this.splitTextNodeValue(node.value);
+    return split.map(value => ({
+      tag: 'textNode',
+      textValue: this.processReactiveValue(
+        value,
+        component,
+        context,
+        'reactive'
+      )
+    }));
+  }
+
+  private splitTextNodeValue(value: string): string[] {
+    const result = [];
+    const regex = /{{([^{]+?)}}/g;
+    let groups: RegExpExecArray;
+    let lastIdx = 0;
+    while ((groups = regex.exec(value))) {
+      if (groups.index !== lastIdx) {
+        result.push(value.substring(lastIdx, groups.index));
+      }
+      result.push(groups[0]);
+      lastIdx = groups.index + groups[0].length;
+    }
+
+    if (lastIdx < value.length) {
+      result.push(value.substr(lastIdx));
+    }
+
+    return result;
   }
 
   private processChildren(

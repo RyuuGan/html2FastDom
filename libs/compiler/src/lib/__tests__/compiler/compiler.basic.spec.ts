@@ -28,7 +28,54 @@ describe('Compiler::Basics', () => {
         ]
       });
     });
-  })
+  });
+
+  describe('Composite inner text', () => {
+    it('should compile with composite inner text with variable at the end', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div>someText {{inputValue}}</div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        children: [
+          { tag: 'textNode', textValue: 'someText ' },
+          { tag: 'textNode', textValue: comp.reactive.inputValue }
+        ]
+      });
+    });
+
+    it('should compile with composite inner text with variable at start', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div>{{inputValue}} someText</div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        children: [
+          { tag: 'textNode', textValue: comp.reactive.inputValue },
+          { tag: 'textNode', textValue: ' someText' }
+        ]
+      });
+    });
+
+    it('should compile with composite inner text with variable at start', () => {
+      const compiler = new HtmlToFastDomCompiler(
+        '<div>Another {{inputValue}} and {{inputValue}} someText</div>'
+      );
+      const fastDomNode = compiler.compile(comp);
+      expect(fastDomNode).toEqual({
+        tag: 'div',
+        children: [
+          { tag: 'textNode', textValue: 'Another ' },
+          { tag: 'textNode', textValue: comp.reactive.inputValue },
+          { tag: 'textNode', textValue: ' and ' },
+          { tag: 'textNode', textValue: comp.reactive.inputValue },
+          { tag: 'textNode', textValue: ' someText' },
+        ]
+      });
+    });
+  });
 
   describe('Compilation with deep assignment', () => {
     it('should compile simple with deep assignment', () => {
