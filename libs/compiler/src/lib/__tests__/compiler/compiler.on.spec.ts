@@ -4,10 +4,10 @@ import { TestComponent } from '../mocks/testCompoment';
 
 const comp = new TestComponent();
 
-describe('Compiler::fdOn', () => {
-  it('should compile fdOnXXX attributes with reference component function', () => {
+describe('Compiler::rOn', () => {
+  it('should compile rOnXXX attributes with reference component function', () => {
     const compiler = new HtmlToFastDomCompiler(
-      '<div fdOnClick="{{onClick}}">someText</div>'
+      '<div rOnClick="{{onClick}}">someText</div>'
     );
     const fastDomNode = compiler.compile(comp);
     expect(fastDomNode).toEqual({
@@ -19,9 +19,9 @@ describe('Compiler::fdOn', () => {
     });
   });
 
-  it('should compile fdOnXX multiple attributes with reference component function', () => {
+  it('should compile rOnXX multiple attributes with reference component function', () => {
     const compiler = new HtmlToFastDomCompiler(
-      '<input fdOnClick="{{onClick}}" fdOnInput="{{onInput}}"/>'
+      '<input rOnClick="{{onClick}}" rOnInput="{{onInput}}"/>'
     );
     const fastDomNode = compiler.compile(comp);
     expect(fastDomNode).toEqual({
@@ -33,23 +33,23 @@ describe('Compiler::fdOn', () => {
     });
   });
 
-  it('should throw if reference in reactive is not defined', () => {
+  it('should throw if reference in rValues is not defined', () => {
     const compiler = new HtmlToFastDomCompiler(
-      '<div fdIf="{{disabled1}}">someText</div>'
+      '<div rOnClick="{{onClick1}}">someText</div>'
     );
     expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
   });
 
   it('should throw if reference is not function', () => {
     const compiler = new HtmlToFastDomCompiler(
-      '<div fdOnClick="{{reactive}}">someText</div>'
+      '<div rOnClick="{{rValues}}">someText</div>'
     );
     expect(() => compiler.compile(comp)).toThrow(CompilerError);
   });
 
   it('should throw if reference is does not exists', () => {
     const compiler = new HtmlToFastDomCompiler(
-      '<div fdOnClick="{{UnknownFN}}">someText</div>'
+      '<div rOnClick="{{UnknownFN}}">someText</div>'
     );
     expect(() => compiler.compile(comp)).toThrow(CompilerError);
   });

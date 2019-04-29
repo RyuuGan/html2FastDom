@@ -40,7 +40,7 @@ describe('Compiler::Basics', () => {
         tag: 'div',
         children: [
           { tag: 'textNode', textValue: 'someText ' },
-          { tag: 'textNode', textValue: comp.reactive.inputValue }
+          { tag: 'textNode', textValue: comp.rValues.inputValue }
         ]
       });
     });
@@ -53,7 +53,7 @@ describe('Compiler::Basics', () => {
       expect(fastDomNode).toEqual({
         tag: 'div',
         children: [
-          { tag: 'textNode', textValue: comp.reactive.inputValue },
+          { tag: 'textNode', textValue: comp.rValues.inputValue },
           { tag: 'textNode', textValue: ' someText' }
         ]
       });
@@ -68,9 +68,9 @@ describe('Compiler::Basics', () => {
         tag: 'div',
         children: [
           { tag: 'textNode', textValue: 'Another ' },
-          { tag: 'textNode', textValue: comp.reactive.inputValue },
+          { tag: 'textNode', textValue: comp.rValues.inputValue },
           { tag: 'textNode', textValue: ' and ' },
-          { tag: 'textNode', textValue: comp.reactive.inputValue },
+          { tag: 'textNode', textValue: comp.rValues.inputValue },
           { tag: 'textNode', textValue: ' someText' },
         ]
       });
@@ -85,13 +85,13 @@ describe('Compiler::Basics', () => {
       const fastDomNode = compiler.compile(comp);
       expect(fastDomNode).toEqual({
         tag: 'div',
-        textValue: comp.reactive.object.value.val
+        textValue: comp.rValues.object.value.val
       });
     });
 
-    it('should compile fdOnXX multiple attributes with reference component function', () => {
+    it('should compile rOnXX multiple attributes with reference component function', () => {
       const compiler = new HtmlToFastDomCompiler(
-        '<input fdOnClick="{{events.onClick}}" fdOnInput="{{events.onInput}}"/>'
+        '<input rOnClick="{{events.onClick}}" rOnInput="{{events.onInput}}"/>'
       );
       const fastDomNode = compiler.compile(comp);
       expect(fastDomNode).toEqual({
@@ -103,9 +103,9 @@ describe('Compiler::Basics', () => {
       });
     });
 
-    it('should compile fdFor attribute with reference to key function and get item from context', () => {
+    it('should compile rFor attribute with reference to key function and get item from context', () => {
       const compiler = new HtmlToFastDomCompiler(
-        '<div fdFor="{{arrayKV}}" fdForKey="{{keyFn}}">{{item.value}}</div>'
+        '<div rFor="{{arrayKV}}" rForKey="{{keyFn}}">{{item.value}}</div>'
       );
       const fastDomNode = compiler.compile(comp);
       expect(fastDomNode).toEqual({

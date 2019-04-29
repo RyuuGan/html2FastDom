@@ -1,4 +1,4 @@
-import { Component } from 'faster-dom';
+import { Component } from 'revact';
 
 export class CompilerError extends Error {
   constructor(public component: Component, public msg: string) {
@@ -19,7 +19,6 @@ export class CompilerError extends Error {
 export class CompilerErrorReactive extends CompilerError {
   constructor(
     public component: Component,
-    public reactiveField: string,
     public reactiveName: string
   ) {
     // 'Error' breaks prototype chain here
@@ -27,7 +26,7 @@ export class CompilerErrorReactive extends CompilerError {
       component,
       `${
         component.constructor.name
-      }.${reactiveField}.${reactiveName} is not defined.`
+      }.rValues.${reactiveName} is not defined.`
     );
 
     // restore prototype chain

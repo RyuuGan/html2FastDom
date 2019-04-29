@@ -36,7 +36,7 @@ describe('Compiler::style', () => {
     });
   });
 
-  it('should compile style attribute with reference to fdStyles', () => {
+  it('should compile style attribute with reference to rValues', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<div style="{{divStyles}}">someText</div>'
     );
@@ -44,11 +44,11 @@ describe('Compiler::style', () => {
     expect(fastDomNode).toEqual({
       tag: 'div',
       textValue: 'someText',
-      styles: comp.fdStyles.divStyles
+      styles: comp.rValues.divStyles
     });
   });
 
-  it('should throw if style attribute has no reference to fdStyles', () => {
+  it('should throw if style attribute has no reference to rValues', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<div style="{{divStyles1}}">someText</div>'
     );

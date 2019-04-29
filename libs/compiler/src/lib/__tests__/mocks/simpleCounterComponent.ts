@@ -1,15 +1,15 @@
-import { Component, createComponent, fdValue } from 'faster-dom';
+import { Component, createComponent, rValue } from 'revact';
 
 import { HtmlComponent } from '../../fastDomComponent';
 
 @HtmlComponent({
-  template: `<button fdOnClick="{{onClick}}">{{counter}}</button>`
+  template: `<button rOnClick="{{onClick}}">{{counter}}</button>`
 })
 class Counter extends Component {
     width = 100;
 
     reactive = {
-        counter: fdValue(0),
+        counter: rValue(0),
     }
 
     onClick = () => {

@@ -1,4 +1,4 @@
-import { Component, fdValue } from 'faster-dom';
+import { Component, rValue } from 'revact';
 import { HtmlToFastDomCompiler } from '../../compiler';
 import { defaultComponentRegistry } from '../../componentMapRegistry';
 import { HtmlComponent } from '../../fastDomComponent';
@@ -30,7 +30,7 @@ describe('Compiler::componentMap', () => {
         {
           instance: expect.anything(),
           tag: 'button',
-          textValue: fdValue(0),
+          textValue: rValue(0),
           listeners: {
             click: expect.any(Function)
           }
@@ -41,7 +41,7 @@ describe('Compiler::componentMap', () => {
 
   it('should compile component from componentMap with args', () => {
     const compiler = new HtmlToFastDomCompiler(
-      `<array-item fdFor="{{arrayKV}}" fdArgs="['Array item:', item, index]"/>`,
+      `<array-item rFor="{{arrayKV}}" rArgs="['Array item:', item, index]"/>`,
       {
         'array-item': createArrayItem
       }
@@ -94,11 +94,11 @@ describe('Compiler::componentMap', () => {
 
   it('should compile component with args with componentMap from decorator', () => {
     @HtmlComponent({
-      template: `<array-item fdFor="{{arrayKV}}" fdArgs="['Array item:', item, index]"/>`
+      template: `<array-item rFor="{{arrayKV}}" rArgs="['Array item:', item, index]"/>`
     })
     class TestCmp extends Component {
       reactive = {
-        arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
+        arrayKV: rValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
       };
     }
 
@@ -156,11 +156,11 @@ describe('Compiler::componentMap', () => {
       createArrayItemWithoutTitle
     );
     @HtmlComponent({
-      template: `<array-item fdFor="{{arrayKV}}" fdArgs="[item, index]"/>`
+      template: `<array-item rFor="{{arrayKV}}" rArgs="[item, index]"/>`
     })
     class TestCmpFactory extends Component {
       reactive = {
-        arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
+        arrayKV: rValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
       };
     }
 

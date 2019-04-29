@@ -1,4 +1,4 @@
-import { Component, createComponent, fdValue } from 'faster-dom';
+import { Component, createComponent } from 'revact';
 
 import { HtmlComponent } from '../../fastDomComponent';
 

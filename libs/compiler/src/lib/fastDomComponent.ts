@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import { HtmlToFastDomCompiler } from './compiler';
-import { FastDomNode, Component, createComponent } from 'faster-dom';
-import { CompilerError } from './compilerError';
+import { RevactNode, createComponent } from 'revact';
 import {
   ComponentMapRegistry,
   defaultComponentRegistry
@@ -28,7 +27,7 @@ export function HtmlComponent(options: HtmlComponentOptions) {
     class HtmlComponentWithConstructor extends constructor {
       constructor(...args: any[]) {
         super(...args);
-        // TODO: maybe return this type check later - doesn't work with fdValue();
+        // TODO: maybe return this type check later - doesn't work with rValue();
         // const isTypeError = !args.every((item, index) => {
         //   return (
         //     Object.getPrototypeOf(item) === Object.getPrototypeOf(meta[index]())
@@ -41,7 +40,7 @@ export function HtmlComponent(options: HtmlComponentOptions) {
         //   );
         // }
       }
-      template: FastDomNode = templateFn(this as any);
+      template: RevactNode = templateFn(this as any);
     }
 
     const selector = options.selector || constructor.name.toLowerCase();

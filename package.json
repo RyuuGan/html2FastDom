@@ -28,9 +28,9 @@
   },
   "private": true,
   "dependencies": {
-    "faster-dom": "0.0.39-alpha",
     "parse5": "^5.1.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "revact": "0.0.5-beta"
   },
   "devDependencies": {
     "ts-jest": "24.0.0",

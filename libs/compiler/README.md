@@ -10,14 +10,14 @@ Just import `HtmlComponent` decorator and use it with your class:
 import { HtmlComponent } from '@html2FastDom/compiler';
 
 @HtmlComponent({
-  template: `<button fdOnClick="{{onClick}}">{{counter}}</button>`,
+  template: `<button rOnClick="{{onClick}}">{{counter}}</button>`,
   selector: 'counter'
 })
 class Counter extends Component {
   width = 100;
 
   reactive = {
-    counter: fdValue(0)
+    counter: rValue(0)
   };
 
   get counter() {
@@ -43,7 +43,7 @@ class name if selector is not specified:
 
 ```ts
 @HtmlComponent({
-  template: `<counter fdFor="[1, 2, 3, 4, 5, 6, 7]"/>`,
+  template: `<counter rFor="[1, 2, 3, 4, 5, 6, 7]"/>`,
   selector: 'counter-for'
 })
 class CounterForComponent extends Component {}
@@ -77,7 +77,7 @@ import { ComponentMapRegistry } from '@html2FastDom/compiler';
 const myRegistry = new ComponentMapRegistry();
 
 @HtmlComponent({
-  template: `<div fdFor="[1, 2, 3, 4, 5, 6, 7]">{{item}}</div>`,
+  template: `<div rFor="[1, 2, 3, 4, 5, 6, 7]">{{item}}</div>`,
   selector: 'counter-for',
   componentRegistry: myRegistry
 })
@@ -99,13 +99,13 @@ const componentMap = {
 class SimpleForComponent extends Component {
 
   template: FastDomNode = new HtmlToFastDomCompiler(
-    `<div fdFor="[1, 2, 3, 4, 5, 6, 7]">
+    `<div rFor="[1, 2, 3, 4, 5, 6, 7]">
        <span>Item</span>
        <span>{{item}}</span>
        <span>&mdash;</span>
        <span>index</span>
        <span>{{index}}</span>
-       <some-component fdArgs="[item]"/>
+       <some-component rArgs="[item]"/>
      <div>`
   ).compile(this, componentMap);
 }

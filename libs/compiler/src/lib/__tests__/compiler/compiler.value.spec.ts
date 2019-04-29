@@ -1,4 +1,4 @@
-import { fdObject } from 'faster-dom';
+import { rValue } from 'revact';
 import { HtmlToFastDomCompiler } from '../../compiler';
 import { CompilerErrorReactive } from '../../compilerError';
 import { TestComponent } from '../mocks/testCompoment';
@@ -13,7 +13,7 @@ describe('Compiler::value', () => {
     const fastDomNode = compiler.compile(comp);
     expect(fastDomNode).toEqual({
       tag: 'input',
-      props: new fdObject({
+      props: rValue({
         value: 'hello world'
       })
     });
@@ -29,13 +29,13 @@ describe('Compiler::value', () => {
       children: [
         {
           tag: 'input',
-          props: new fdObject({
+          props: rValue({
             value: 'hello world'
           })
         },
         {
           tag: 'input',
-          props: new fdObject({
+          props: rValue({
             value: 'another hello world'
           })
         }
@@ -43,20 +43,20 @@ describe('Compiler::value', () => {
     });
   });
 
-  it('should compile value attribute with reference to fdObjects', () => {
+  it('should compile value attribute with reference to rValues', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<input value="{{inputValue}}"/>'
     );
     const fastDomNode = compiler.compile(comp);
     expect(fastDomNode).toEqual({
       tag: 'input',
-      props: new fdObject({
-        value: comp.reactive.inputValue
+      props: rValue({
+        value: comp.rValues.inputValue
       })
     });
   });
 
-  it('should throw if style attribute has no reference to fdObjects', () => {
+  it('should throw if style attribute has no reference to rValues', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<input value="{{inputValue1}}"/>'
     );

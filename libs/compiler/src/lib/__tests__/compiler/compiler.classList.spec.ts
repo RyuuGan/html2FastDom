@@ -36,7 +36,7 @@ describe('Compiler::classList', () => {
     });
   });
 
-  it('should compile class attributes with reference to fdObjects', () => {
+  it('should compile class attributes with reference to rValues', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<div class="{{divClasses}}">someText</div>'
     );
@@ -44,11 +44,11 @@ describe('Compiler::classList', () => {
     expect(fastDomNode).toEqual({
       tag: 'div',
       textValue: 'someText',
-      classList: comp.fdObjects.divClasses
+      classList: comp.rValues.divClasses
     });
   });
 
-  it('should throw if reference in fdObjects is not defined', () => {
+  it('should throw if reference in rValues is not defined', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<div class="{{divClasses1}}">someText</div>'
     );

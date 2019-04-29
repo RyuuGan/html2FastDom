@@ -1,4 +1,4 @@
-import { Component, FastDomNode, fdFor, fdObject, Observer } from 'faster-dom';
+import { Component, RevactNode, rList, Observer } from 'revact';
 import * as parse5 from 'parse5';
 import { isElementNode, isTextNode } from 'parse5/lib/tree-adapters/default';
 import {
@@ -13,18 +13,18 @@ export class HtmlToFastDomCompiler {
     this.documentRoot = parse5.parseFragment(html) as any;
   }
 
-  private static fdForAttribs = [
-    'fdfor',
-    'fd-for',
-    'fdforkey',
-    'fd-for-key',
+  private static rForAttribs = [
+    'rfor',
+    'r-for',
+    'rforkey',
+    'r-for-key',
     'letindex',
     'letitem'
   ];
   documentRoot: parse5.DefaultTreeDocumentFragment;
 
-  compile(component: Component): FastDomNode;
-  compile(): (component: Component) => FastDomNode;
+  compile(component: Component): RevactNode;
+  compile(): (component: Component) => RevactNode;
   compile(component?: Component) {
     if (component) {
       return this._compile(component);
@@ -52,11 +52,11 @@ export class HtmlToFastDomCompiler {
     return node.nodeName === '#document-fragment';
   }
 
-  private isFdFor(node: parse5.DefaultTreeElement): boolean {
-    const fdForIdx = node.attrs.findIndex(
-      attr => attr.name === 'fd-for' || attr.name === 'fdfor'
+  private isFor(node: parse5.DefaultTreeElement): boolean {
+    const forIdx = node.attrs.findIndex(
+      attr => attr.name === 'r-for' || attr.name === 'rfor'
     );
-    return fdForIdx > -1;
+    return forIdx > -1;
   }
 
   private _compile(component: Component, context: any = component) {
@@ -76,7 +76,7 @@ export class HtmlToFastDomCompiler {
         textValue: ''
       };
     }
-    if (this.isElementNode(root) && this.isFdFor(root)) {
+    if (this.isElementNode(root) && this.isFor(root)) {
       const [rootNode] = this.processNode(
         this.documentRoot,
         component,
@@ -93,7 +93,7 @@ export class HtmlToFastDomCompiler {
     component: Component,
     context: any = {},
     skipArray = false
-  ): FastDomNode[] {
+  ): RevactNode[] {
     if (this.isTextNode(node)) {
       return this.processTextNode(node, component, context);
     }
@@ -108,8 +108,8 @@ export class HtmlToFastDomCompiler {
         }
       ];
     }
-    if (this.isFdFor(node) && !skipArray) {
-      return this.processNodeFdFor(node, component, context);
+    if (this.isFor(node) && !skipArray) {
+      return this.processNodeFor(node, component, context);
     }
     const tagName = node.tagName.toLowerCase();
     const componentFactory = this.componentMap[tagName];
@@ -154,7 +154,7 @@ export class HtmlToFastDomCompiler {
     node: parse5.DefaultTreeTextNode,
     component: Component,
     context: any
-  ): FastDomNode[] {
+  ): RevactNode[] {
     const split = this.splitTextNodeValue(node.value);
     return split.map(value => ({
       tag: 'textNode',
@@ -162,7 +162,6 @@ export class HtmlToFastDomCompiler {
         value,
         component,
         context,
-        'reactive'
       )
     }));
   }
@@ -206,29 +205,10 @@ export class HtmlToFastDomCompiler {
     input: string,
     component: Component,
     context: any,
-    reactiveType: 'reactive'
-  ): string | Observer<any>;
-  private processReactiveValue(
-    input: string,
-    component: Component,
-    context: any,
-    reactiveType: 'fdStyles'
-  ): fdObject<any> | Observer<string>;
-  private processReactiveValue(
-    input: string,
-    component: Component,
-    context: any,
-    reactiveType: 'fdObjects'
-  ): fdObject<any>;
-  private processReactiveValue(
-    input: string,
-    component: Component,
-    context: any = {},
-    reactiveType: 'reactive' | 'fdObjects' | 'fdStyles'
-  ) {
+  ): string | Observer<any> {
     const name = this.getReactiveName(input);
     if (name) {
-      return this.getValue(name, component, reactiveType, context);
+      return this.getValue(name, component, context);
     }
     return input;
   }
@@ -236,7 +216,6 @@ export class HtmlToFastDomCompiler {
   private getValue(
     name: string,
     component: Component,
-    reactiveType: string,
     context: any
   ) {
     try {
@@ -246,9 +225,9 @@ export class HtmlToFastDomCompiler {
       }
     } catch {}
     try {
-      return this.getValueDeep(component, component[reactiveType], name);
+      return this.getValueDeep(component, component.rValues, name);
     } catch {
-      throw new CompilerErrorReactive(component, reactiveType, name);
+      throw new CompilerErrorReactive(component, name);
     }
   }
 
@@ -280,7 +259,7 @@ export class HtmlToFastDomCompiler {
   ): any {
     const data = node.attrs.reduce(
       (memo, attr) => {
-        if (attr.name.startsWith('fdfor') || attr.name.startsWith('fd-for')) {
+        if (attr.name.startsWith('rfor') || attr.name.startsWith('r-for')) {
           return memo;
         }
         if (attr.name.startsWith('let')) {
@@ -295,19 +274,18 @@ export class HtmlToFastDomCompiler {
         if (attr.name === 'class') {
           return this.processAttributeClass(attr, memo, component, context);
         }
-        // fdIf
-        if (attr.name === 'fdif' || attr.name === 'fd-if') {
-          return this.processAttributeFdIf(attr, memo, component, context);
+        // rIf
+        if (attr.name === 'rif' || attr.name === 'r-if') {
+          return this.processAttributeIf(attr, memo, component, context);
         }
-        if (attr.name.startsWith('fdon')) {
-          return this.processAddributeFdOn(attr, memo, component, context);
+        if (attr.name.startsWith('ron')) {
+          return this.processAddributeOn(attr, memo, component, context);
         }
         const attrs = memo.attrs || {};
         attrs[attr.name] = this.processReactiveValue(
           attr.value,
           component,
           context,
-          'reactive'
         );
         return {
           ...memo,
@@ -317,17 +295,17 @@ export class HtmlToFastDomCompiler {
       {} as any
     );
     if (data.attrs && Object.keys(data.attrs).length) {
-      data.attrs = new fdObject(data.attrs);
+      data.attrs = new Observer(data.attrs);
     }
 
     if (data.props && Object.keys(data.props).length) {
-      data.props = new fdObject(data.props);
+      data.props = new Observer(data.props);
     }
 
     return data;
   }
 
-  private processAttributeFdIf(
+  private processAttributeIf(
     attr: parse5.Attribute,
     memo: any,
     component: Component,
@@ -335,9 +313,9 @@ export class HtmlToFastDomCompiler {
   ) {
     const name = this.getReactiveName(attr.value);
     if (!name) {
-      throw new CompilerErrorReactive(component, 'reactive', attr.name);
+      throw new CompilerErrorReactive(component, attr.name);
     }
-    const show = this.getValue(name, component, 'reactive', context);
+    const show = this.getValue(name, component, context);
     return {
       ...memo,
       show
@@ -360,7 +338,6 @@ export class HtmlToFastDomCompiler {
           attrValue,
           component,
           context,
-          'fdObjects'
         )
       };
     }
@@ -381,7 +358,6 @@ export class HtmlToFastDomCompiler {
       attr.value,
       component,
       context,
-      'reactive'
     );
     return {
       ...memo,
@@ -389,20 +365,20 @@ export class HtmlToFastDomCompiler {
     };
   }
 
-  private processAddributeFdOn(
+  private processAddributeOn(
     attr: parse5.Attribute,
     memo: any,
     component: Component,
     context: any
   ) {
-    const eventName = attr.name.substring(4); // 'fdon'.length
+    const eventName = attr.name.substring(3); // 'ron'.length
     const listeners = memo.listeners || {};
     const name = this.getReactiveName(attr.value);
 
     if (!name) {
       throw new CompilerError(
         component,
-        `fdOn must be a function, got ${
+        `rOn must be a function, got ${
           component.constructor.name
         }[${name}] = ${component[name]}`
       );
@@ -417,7 +393,7 @@ export class HtmlToFastDomCompiler {
     if (typeof eventFn !== 'function') {
       throw new CompilerError(
         component,
-        `fdOn must be a function, got ${
+        `rOn must be a function, got ${
           component.constructor.name
         }[${name}] = ${component[name]}`
       );
@@ -439,18 +415,18 @@ export class HtmlToFastDomCompiler {
     }
     return {
       ...memo,
-      styles: this.processReactiveValue(val, component, context, 'fdStyles')
+      styles: this.processReactiveValue(val, component, context)
     };
   }
 
-  private processNodeFdFor(
+  private processNodeFor(
     node: parse5.DefaultTreeElement,
     component: Component,
     context: any
-  ): FastDomNode[] {
-    const fdForAttrs = node.attrs.reduce(
+  ): RevactNode[] {
+    const forAttrs = node.attrs.reduce(
       (memo, attr) =>
-        HtmlToFastDomCompiler.fdForAttribs.includes(attr.name)
+        HtmlToFastDomCompiler.rForAttribs.includes(attr.name)
           ? {
               ...memo,
               [attr.name]: attr.value
@@ -458,36 +434,36 @@ export class HtmlToFastDomCompiler {
           : memo,
       {}
     );
-    const fdForValue = fdForAttrs['fdfor'] || fdForAttrs['fd-for'];
-    const reactiveName = this.getReactiveName(fdForValue);
+    const forValue = forAttrs['rfor'] || forAttrs['r-for'];
+    const reactiveName = this.getReactiveName(forValue);
 
     let arr: any;
     if (reactiveName) {
       try {
-        arr = this.getValue(reactiveName, component, 'reactive', context);
+        arr = this.getValue(reactiveName, component, context);
       } catch {
-        throw new CompilerErrorReactive(component, 'reactive', reactiveName);
+        throw new CompilerErrorReactive(component, reactiveName);
       }
     } else {
       try {
-        arr = JSON.parse(fdForValue);
+        arr = JSON.parse(forValue);
         if (!Array.isArray(arr)) {
           throw new Error('Not Array');
         }
       } catch {
-        throw new CompilerErrorAttr(component, 'fdFor', 'must be an array');
+        throw new CompilerErrorAttr(component, 'rFor', 'must be an array');
       }
     }
 
     let keyFn: (item: any) => any;
-    const fdForKeyValue = fdForAttrs['fdforkey'] || fdForAttrs['fd-for-key'];
+    const forKeyValue = forAttrs['rforkey'] || forAttrs['r-for-key'];
 
-    if (fdForKeyValue) {
-      const name = this.getReactiveName(fdForKeyValue);
+    if (forKeyValue) {
+      const name = this.getReactiveName(forKeyValue);
       if (!name) {
         throw new CompilerError(
           component,
-          `fdKeyFor must be a function, got ${
+          `rKeyFor must be a function, got ${
             component.constructor.name
           }[${name}] = ${name}`
         );
@@ -497,17 +473,17 @@ export class HtmlToFastDomCompiler {
       if (typeof keyFn !== 'function') {
         throw new CompilerError(
           component,
-          `fdOn must be a function, got ${
+          `rOn must be a function, got ${
             component.constructor.name
           }[${name}] = ${component[name]}`
         );
       }
     }
-    const indexName = fdForAttrs['letindex'] || 'index';
-    const itemName = fdForAttrs['letitem'] || 'item';
-    // TODO: add fdFor overrides for variables name
+    const indexName = forAttrs['letindex'] || 'index';
+    const itemName = forAttrs['letitem'] || 'item';
+    // TODO: add rFor overrides for variables name
     // TODO: add inputs args, currently not supported
-    return fdFor(
+    return rList(
       arr,
       (item, index) => {
         const nodes = this.processNode(
@@ -532,13 +508,13 @@ export class HtmlToFastDomCompiler {
     node: parse5.DefaultTreeElement,
     context: any
   ): any[] {
-    const fdArgs = node.attrs.find(a => a.name === 'fdargs');
-    if (!fdArgs) {
+    const argsAttr = node.attrs.find(a => a.name === 'rargs');
+    if (!argsAttr) {
       return [];
     }
-    const arr = fdArgs.value.trim();
+    const arr = argsAttr.value.trim();
     if (arr[0] !== '[' || arr[arr.length - 1] !== ']') {
-      throw new CompilerErrorAttr(component, 'fdArgs', 'must be an array');
+      throw new CompilerErrorAttr(component, 'rArgs', 'must be an array');
     }
     const args = arr
       .substring(1, arr.length - 1)
@@ -546,7 +522,7 @@ export class HtmlToFastDomCompiler {
       .map(value => {
         const e = value.trim();
         if (/^[a-zA-Z_][a-zA-Z_\.-]*$/.test(e)) {
-          return this.getValue(e, component, 'reactive', context);
+          return this.getValue(e, component, context);
         } else {
           try {
             // with autoreplace for strings
@@ -554,7 +530,7 @@ export class HtmlToFastDomCompiler {
           } catch {
             throw new CompilerErrorAttr(
               component,
-              'fdArgs',
+              'rArgs',
               `is invalid: can not parse ${e} as primitive value`
             );
           }

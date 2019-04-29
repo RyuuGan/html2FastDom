@@ -1,4 +1,4 @@
-import { Component, fdValue } from 'faster-dom';
+import { Component, rValue } from 'revact';
 import { HtmlComponent } from './fastDomComponent';
 import { defaultComponentRegistry } from './componentMapRegistry';
 
@@ -14,7 +14,7 @@ describe('FastDomComponent', () => {
     })
     class TestComponent extends Component {
       reactive = {
-        value: fdValue('value')
+        value: rValue('value')
       };
     }
 
@@ -28,11 +28,11 @@ describe('FastDomComponent', () => {
 
   it('should compile template with decorator accessing parameters', () => {
     @HtmlComponent({
-      template: `<div fdFor="{{arrayKV}}"><span>{{index}}</span><span>{{item.value}}</span></div>`
+      template: `<div rFor="{{arrayKV}}"><span>{{index}}</span><span>{{item.value}}</span></div>`
     })
     class TestComponent extends Component {
       reactive = {
-        arrayKV: fdValue([
+        arrayKV: rValue([
           { key: 'key1', value: 'value1' },
           { key: 'key2', value: 'value2' }
         ])

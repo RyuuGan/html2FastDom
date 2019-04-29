@@ -1,34 +1,28 @@
-import { Component, fdValue, fdIf, fdObject, Observer } from 'faster-dom';
+import { Component, rValue, Observer } from 'revact';
 
 export class TestComponent extends Component {
-  reactive = {
+  rValues = {
     inputValue: new Observer('some value'),
-    bgFirstColor: fdValue('#' + (((1 << 24) * Math.random()) | 0).toString(16)),
-    bgSecondColor: fdValue(
+    bgFirstColor: rValue('#' + (((1 << 24) * Math.random()) | 0).toString(16)),
+    bgSecondColor: rValue(
       'background-color: #' +
         (((1 << 24) * Math.random()) | 0).toString(16) +
         ';user-select: none;'
     ),
-    src: fdValue('https://www.w3schools.com/html/pic_trulli.jpg'),
-    disabled: fdIf(false),
-    array: fdValue([1, 2]),
-    arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
-    object: fdValue({
+    src: rValue('https://www.w3schools.com/html/pic_trulli.jpg'),
+    disabled: rValue(false),
+    array: rValue([1, 2]),
+    arrayKV: rValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
+    object: rValue({
       val: new Observer('some value'),
-      disabled: fdIf(false),
-      arrayKV: fdValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
-    })
-  };
-
-  fdObjects = {
-    divClasses: new fdObject({
+      disabled: rValue(false),
+      arrayKV: rValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }]),
+    }),
+    divClasses: rValue({
       'some-class': true,
       'some-other-class': false
-    })
-  };
-
-  fdStyles = {
-    divStyles: new fdObject({
+    }),
+    divStyles: rValue({
       display: 'none',
       position: 'absolute'
     })
@@ -39,12 +33,12 @@ export class TestComponent extends Component {
   }
 
   onClick = () => {
-    this.reactive.bgFirstColor.value =
+    this.rValues.bgFirstColor.value =
       '#' + (((1 << 24) * Math.random()) | 0).toString(16);
   };
 
   onInput = (e: any) => {
-    this.reactive.inputValue.value = e.target.value;
+    this.rValues.inputValue.value = e.target.value;
   }
 
   // tslint:disable
