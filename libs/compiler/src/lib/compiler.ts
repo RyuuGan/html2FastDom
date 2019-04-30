@@ -244,7 +244,7 @@ export class HtmlToFastDomCompiler {
           component,
           `Invalid reference for ${name} to lookup. Cannot read ${
             names[i]
-          } of ${current}`
+          } of ${current.constructor.name}`
         );
       }
       current = current[names[i]];

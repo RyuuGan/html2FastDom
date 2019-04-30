@@ -13,7 +13,7 @@ describe('FastDomComponent', () => {
       template: `<div>{{value}}</div>`
     })
     class TestComponent extends Component {
-      reactive = {
+      rValues = {
         value: rValue('value')
       };
     }
@@ -22,7 +22,7 @@ describe('FastDomComponent', () => {
 
     expect(component.template).toEqual({
       tag: 'div',
-      textValue: component.reactive.value
+      textValue: component.rValues.value
     });
   });
 
@@ -31,7 +31,7 @@ describe('FastDomComponent', () => {
       template: `<div rFor="{{arrayKV}}"><span>{{index}}</span><span>{{item.value}}</span></div>`
     })
     class TestComponent extends Component {
-      reactive = {
+      rValues = {
         arrayKV: rValue([
           { key: 'key1', value: 'value1' },
           { key: 'key2', value: 'value2' }

@@ -30,7 +30,7 @@
   "dependencies": {
     "parse5": "^5.1.0",
     "reflect-metadata": "^0.1.13",
-    "revact": "0.0.5-beta"
+    "revact": "0.0.6-beta"
   },
   "devDependencies": {
     "ts-jest": "24.0.0",

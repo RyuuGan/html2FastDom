@@ -1,5 +1,5 @@
 import { HtmlToFastDomCompiler } from '../../compiler';
-import { CompilerError, CompilerErrorReactive } from '../../compilerError';
+import { CompilerError } from '../../compilerError';
 import { TestComponent } from '../mocks/testCompoment';
 
 const comp = new TestComponent();
@@ -37,7 +37,7 @@ describe('Compiler::rOn', () => {
     const compiler = new HtmlToFastDomCompiler(
       '<div rOnClick="{{onClick1}}">someText</div>'
     );
-    expect(() => compiler.compile(comp)).toThrow(CompilerErrorReactive);
+    expect(() => compiler.compile(comp)).toThrow(CompilerError);
   });
 
   it('should throw if reference is not function', () => {
