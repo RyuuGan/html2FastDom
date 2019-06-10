@@ -159,7 +159,7 @@ describe('Compiler::componentMap', () => {
       template: `<array-item rFor="{{arrayKV}}" rArgs="[item, index]"/>`
     })
     class TestCmpFactory extends Component {
-      reactive = {
+      rValues = {
         arrayKV: rValue([{ key: 'key1', value: 1 }, { key: 'key2', value: 2 }])
       };
     }
