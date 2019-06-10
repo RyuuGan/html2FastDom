@@ -27,7 +27,7 @@
           }
         },
         "test": {
-          "builder": "@nrwl/builders:jest",
+          "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "libs/compiler/jest.config.js",
             "tsConfig": "libs/compiler/tsconfig.spec.json"
@@ -111,6 +111,32 @@
           }
         }
       }
+    },
+    "transformer": {
+      "root": "libs/transformer",
+      "sourceRoot": "libs/transformer/src",
+      "projectType": "library",
+      "prefix": "html2FastDom",
+      "architect": {
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/transformer/tsconfig.lib.json",
+              "libs/transformer/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "libs/transformer/jest.config.js",
+            "tsConfig": "libs/transformer/tsconfig.spec.json"
+          }
+        }
+      },
+      "schematics": {}
     }
   },
   "cli": {

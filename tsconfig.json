@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@html2FastDom/compiler": ["libs/compiler/src/index.ts"]
+      "@html2FastDom/compiler": ["libs/compiler/src/index.ts"],
+      "@html2FastDom/transformer": ["libs/transformer/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
